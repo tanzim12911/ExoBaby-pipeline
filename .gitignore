@@ -1,0 +1,21 @@
+# Data — too large for git, use shared drive
+data/
+
+# Logs
+logs/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+env/
+
+# API keys — never commit these
+.env
+*.env
+
+# OS
+.DS_Store
+Thumbs.db
