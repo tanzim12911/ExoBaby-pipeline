@@ -14,6 +14,7 @@ def search_and_download(
     max_videos: int,
     output_dir: str,
     video_format: str,
+    merge_format: str = "mp4",
 ) -> list[str]:
     """
     Download videos from a YouTube hashtag URL or a text search query.
@@ -47,6 +48,11 @@ def search_and_download(
         "progress_hooks": [progress_hook],
         "quiet": True,
         "no_warnings": True,
+        # Skip entries that error (e.g. images, deleted videos, Shorts
+        # with no downloadable video stream) instead of crashing the run
+        "ignoreerrors": True,
+        # Force merge output into mp4 so ffmpeg can process it downstream
+        "merge_output_format": merge_format,
     }
 
     if not is_url:
@@ -65,9 +71,10 @@ def search_and_download(
 
 
 def get_all_videos(output_dir: str) -> list[str]:
-    """Return paths of all .mp4 files in output_dir."""
+    """Return paths of all video files (.mp4, .webm, .mkv) in output_dir."""
+    extensions = (".mp4", ".webm", ".mkv")
     return [
         os.path.join(output_dir, f)
         for f in os.listdir(output_dir)
-        if f.endswith(".mp4")
+        if f.lower().endswith(extensions)
     ]

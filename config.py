@@ -18,8 +18,8 @@ GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "YOUR_API_KEY_HERE")
 # 4 seconds between calls keeps us safely under 15 RPM
 GEMINI_RATE_LIMIT_SECONDS = 4
 
-# Model to use — Flash is faster and cheaper on the free tier
-GEMINI_MODEL = "gemini-1.5-flash"
+# Model to use — 3.1 Flash Lite is fast and free-tier compatible
+GEMINI_MODEL = "gemini-3.1-flash-lite"
 
 # --- YouTube Search ---
 # You can use two formats here:
@@ -32,18 +32,17 @@ GEMINI_MODEL = "gemini-1.5-flash"
 #
 # Mix both as needed. Hashtag URLs tend to surface more relevant content.
 SEARCH_QUERIES = [
-    "https://www.youtube.com/hashtag/bangladeshibabyvlog",
-    "https://www.youtube.com/hashtag/babyvlogbangladesh",
-    "https://www.youtube.com/hashtag/dhakababylife",
-    "https://www.youtube.com/hashtag/babyvlog",
-    "https://www.youtube.com/hashtag/toddlervlog",
+    "https://www.youtube.com/hashtag/bangladeshibabyvlogger",
 ]
 
 # Number of videos to download per search query
 MAX_VIDEOS_PER_QUERY = 10
 
-# Video download quality — 720p balances quality and disk space
-VIDEO_FORMAT = "bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/best[height<=720][ext=mp4]/best"
+# Video download quality — merges best video+audio into mp4, falls back to best available
+VIDEO_FORMAT = "bestvideo[height<=720]+bestaudio/best[height<=720]/best"
+
+# Merge output into mp4 regardless of source format
+VIDEO_MERGE_FORMAT = "mp4"
 
 # --- Segmentation ---
 CLIP_DURATION_SECONDS = 30

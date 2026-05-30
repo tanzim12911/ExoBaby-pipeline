@@ -17,7 +17,7 @@ YouTube Search
 [3] Sample 4 frames per clip (OpenCV)
      │
      ▼
-[4+5] Filter via Gemini VLM (Gemini 1.5 Flash)
+[4+5] Filter via Gemini VLM (Gemini 3.1 Flash Lite)
      │
      ├── FAIL → logged to filter_results.csv/.json, discarded
      │
