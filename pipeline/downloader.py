@@ -28,7 +28,6 @@ def search_and_download(
     output_dir: str,
     video_format: str,
     merge_format: str = "mp4",
-    region: str | None = None,
 ) -> list[str]:
     """
     Download videos from a YouTube hashtag URL or a text search query.
@@ -37,15 +36,6 @@ def search_and_download(
       Scrapes the hashtag feed directly, much more precise than text search.
     - Text query (e.g. "Bangladeshi baby vlog"):
       Falls back to YouTube search (ytsearchN).
-
-    Args:
-        region: ISO 3166-1 alpha-2 country code (e.g. "BD", "US").
-                When set, passes gl=<region> to the YouTube extractor so
-                search results and hashtag feeds are biased toward that
-                country.  Also enables metadata-based filtering so that
-                videos whose uploader country doesn't match are skipped.
-                Note: YouTube does not guarantee hard region isolation —
-                this is a strong hint, not a strict filter.
 
     Returns a list of file paths for successfully downloaded videos.
     Skips videos already downloaded via the archive file.
@@ -62,14 +52,12 @@ def search_and_download(
     # For plain text search, yt-dlp handles the cap natively via ytsearchN.
     if not is_url:
         return _download_text_search(
-            query, max_videos, output_dir, archive_file, video_format, merge_format,
-            region=region,
+            query, max_videos, output_dir, archive_file, video_format, merge_format
         )
 
     # For feeds/hashtags: walk the feed in batches, stop once we have enough.
     return _download_feed(
-        query, max_videos, output_dir, archive_file, video_format, merge_format,
-        region=region,
+        query, max_videos, output_dir, archive_file, video_format, merge_format
     )
 
 
