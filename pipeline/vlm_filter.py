@@ -74,7 +74,10 @@ def filter_clip(
         return {"pass": False, "reason": "No valid frames to send", "raw": "", "error": "no frames"}
 
     try:
-        response = model.generate_content([FILTER_PROMPT] + images)
+        response = model.generate_content(
+            [FILTER_PROMPT] + images,
+            request_options={"timeout": 60},  # fail fast if API hangs
+        )
         raw_text = response.text.strip()
     except Exception as e:
         logger.error(f"Gemini API error: {e}")

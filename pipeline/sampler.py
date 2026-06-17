@@ -28,8 +28,10 @@ def sample_frames(
         return []
 
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    if total_frames == 0:
-        logger.warning(f"Zero frames in clip: {clip_path}")
+    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    if total_frames <= 0 or width == 0 or height == 0:
+        logger.warning(f"Invalid video stream (frames={total_frames}, {width}x{height}): {clip_path}")
         cap.release()
         return []
 

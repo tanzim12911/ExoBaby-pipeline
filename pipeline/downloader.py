@@ -9,12 +9,26 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def _load_archive(archive_file: str) -> set[str]:
+    """Return the set of video IDs already in the download archive."""
+    if not os.path.exists(archive_file):
+        return set()
+    ids = set()
+    with open(archive_file, encoding="utf-8") as f:
+        for line in f:
+            parts = line.strip().split()
+            if len(parts) >= 2:
+                ids.add(parts[1])  # format: "youtube <video_id>"
+    return ids
+
+
 def search_and_download(
     query: str,
     max_videos: int,
     output_dir: str,
     video_format: str,
     merge_format: str = "mp4",
+    region: str | None = None,
 ) -> list[str]:
     """
     Download videos from a YouTube hashtag URL or a text search query.
@@ -24,12 +38,49 @@ def search_and_download(
     - Text query (e.g. "Bangladeshi baby vlog"):
       Falls back to YouTube search (ytsearchN).
 
+    Args:
+        region: ISO 3166-1 alpha-2 country code (e.g. "BD", "US").
+                When set, passes gl=<region> to the YouTube extractor so
+                search results and hashtag feeds are biased toward that
+                country.  Also enables metadata-based filtering so that
+                videos whose uploader country doesn't match are skipped.
+                Note: YouTube does not guarantee hard region isolation —
+                this is a strong hint, not a strict filter.
+
     Returns a list of file paths for successfully downloaded videos.
     Skips videos already downloaded via the archive file.
+
+    For hashtag/playlist feeds, iterates through the feed in batches,
+    skipping already-archived videos, until max_videos new ones are
+    downloaded or the feed is exhausted — no hardcoded playlist offset needed.
     """
     os.makedirs(output_dir, exist_ok=True)
     archive_file = os.path.join(output_dir, "downloaded.txt")
 
+    is_url = query.startswith("http://") or query.startswith("https://")
+
+    # For plain text search, yt-dlp handles the cap natively via ytsearchN.
+    if not is_url:
+        return _download_text_search(
+            query, max_videos, output_dir, archive_file, video_format, merge_format,
+            region=region,
+        )
+
+    # For feeds/hashtags: walk the feed in batches, stop once we have enough.
+    return _download_feed(
+        query, max_videos, output_dir, archive_file, video_format, merge_format,
+        region=region,
+    )
+
+
+def _download_text_search(
+    query: str,
+    max_videos: int,
+    output_dir: str,
+    archive_file: str,
+    video_format: str,
+    merge_format: str,
+) -> list[str]:
     downloaded_paths = []
 
     def progress_hook(d):
@@ -37,36 +88,123 @@ def search_and_download(
             downloaded_paths.append(d["filename"])
             logger.info(f"Downloaded: {d['filename']}")
 
-    is_url = query.startswith("http://") or query.startswith("https://")
-
     ydl_opts = {
         "format": video_format,
         "outtmpl": os.path.join(output_dir, "%(id)s.%(ext)s"),
-        "noplaylist": False,        # allow playlist/feed for hashtag URLs
-        "playlistend": max_videos,  # limit to max_videos from the feed
+        "noplaylist": True,
+        "default_search": f"ytsearch{max_videos}",
         "download_archive": archive_file,
         "progress_hooks": [progress_hook],
         "quiet": True,
         "no_warnings": True,
-        # Skip entries that error (e.g. images, deleted videos, Shorts
-        # with no downloadable video stream) instead of crashing the run
         "ignoreerrors": True,
-        # Force merge output into mp4 so ffmpeg can process it downstream
         "merge_output_format": merge_format,
     }
 
-    if not is_url:
-        # Text search — use ytsearchN prefix
-        ydl_opts["noplaylist"] = True
-        ydl_opts["default_search"] = f"ytsearch{max_videos}"
-
-    logger.info(
-        f"{'Hashtag feed' if is_url else 'Text search'}: '{query}' "
-        f"(top {max_videos})"
-    )
+    logger.info(f"Text search: '{query}' (top {max_videos})")
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         ydl.download([query])
 
+    return downloaded_paths
+
+
+def _download_feed(
+    url: str,
+    max_videos: int,
+    output_dir: str,
+    archive_file: str,
+    video_format: str,
+    merge_format: str,
+    batch_size: int = 20,
+) -> list[str]:
+    """
+    Walk a hashtag/playlist feed in batches of `batch_size`.
+
+    Strategy:
+      1. Extract the flat entry list for the current batch window (no download).
+      2. Skip any IDs already in the archive.
+      3. Download only the new ones, stop once max_videos reached.
+      4. If the feed window returned fewer entries than batch_size, we've hit
+         the end of the feed — stop.
+    """
+    archived = _load_archive(archive_file)
+    downloaded_paths = []
+    position = 1
+
+    logger.info(f"Hashtag feed: '{url}' (fetching up to {max_videos} new videos)")
+
+    while len(downloaded_paths) < max_videos:
+        batch_end = position + batch_size - 1
+
+        # Step 1: list entries in this window without downloading
+        logger.info(f"  Scanning feed positions {position}–{batch_end} ...")
+        with yt_dlp.YoutubeDL({
+            "quiet": True,
+            "no_warnings": True,
+            "ignoreerrors": True,
+            "noplaylist": False,
+            "playliststart": position,
+            "playlistend": batch_end,
+            "extract_flat": True,
+        }) as ydl:
+            info = ydl.extract_info(url, download=False)
+
+        entries = info.get("entries", []) if info else []
+        if not entries:
+            logger.info("  Feed exhausted — no entries in window.")
+            break
+
+        # Step 2: filter out already-archived IDs
+        new_ids = [
+            e["id"] for e in entries
+            if e and e.get("id") and e["id"] not in archived
+        ]
+        needed = max_videos - len(downloaded_paths)
+        ids_to_fetch = new_ids[:needed]
+
+        logger.info(
+            f"  {len(entries)} entries in window, "
+            f"{len(new_ids)} new, "
+            f"downloading {len(ids_to_fetch)}"
+        )
+
+        # Step 3: download the new IDs
+        if ids_to_fetch:
+            batch_downloaded = []
+
+            def progress_hook(d):
+                if d["status"] == "finished":
+                    batch_downloaded.append(d["filename"])
+                    logger.info(f"Downloaded: {d['filename']}")
+
+            ydl_opts = {
+                "format": video_format,
+                "outtmpl": os.path.join(output_dir, "%(id)s.%(ext)s"),
+                "noplaylist": True,   # download individual IDs directly
+                "download_archive": archive_file,
+                "progress_hooks": [progress_hook],
+                "quiet": True,
+                "no_warnings": True,
+                "ignoreerrors": True,
+                "merge_output_format": merge_format,
+            }
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                ydl.download([f"https://www.youtube.com/watch?v={vid_id}" for vid_id in ids_to_fetch])
+
+            downloaded_paths.extend(batch_downloaded)
+            archived.update(ids_to_fetch)
+
+        # Step 4: if the window was shorter than batch_size, feed is exhausted
+        if len(entries) < batch_size:
+            logger.info("  Reached end of feed.")
+            break
+
+        position = batch_end + 1
+
+    logger.info(f"  Done. {len(downloaded_paths)} new video(s) downloaded.")
+    return downloaded_paths
+
+    logger.info(f"  Done. {len(downloaded_paths)} new video(s) downloaded.")
     return downloaded_paths
 
 

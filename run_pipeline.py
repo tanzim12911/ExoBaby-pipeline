@@ -15,6 +15,7 @@ import csv
 import json
 import logging
 import argparse
+from datetime import datetime
 from pathlib import Path
 
 import config
@@ -66,6 +67,47 @@ def append_to_csv(log_path: str, row: dict):
         if not file_exists:
             writer.writeheader()
         writer.writerow(row)
+
+
+def write_summary(
+    log_path: str,
+    raw_videos: int,
+    total_clips: int,
+    passed_clips: int,
+    failed_clips: int,
+    sampled_frames: int,
+    exported_frames: int,
+    search_queries: list[str] | None = None,
+):
+    """
+    Append one summary row to the run-summary CSV.
+    Creates the file with a header if it does not yet exist.
+    """
+    file_exists = os.path.exists(log_path)
+    fieldnames = [
+        "timestamp",
+        "search_queries",
+        "raw_videos",
+        "total_clips",
+        "passed_clips",
+        "failed_clips",
+        "sampled_frames",
+        "exported_frames",
+    ]
+    with open(log_path, "a", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        if not file_exists:
+            writer.writeheader()
+        writer.writerow({
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "search_queries": " | ".join(search_queries) if search_queries else "",
+            "raw_videos": raw_videos,
+            "total_clips": total_clips,
+            "passed_clips": passed_clips,
+            "failed_clips": failed_clips,
+            "sampled_frames": sampled_frames,
+            "exported_frames": exported_frames,
+        })
 
 
 def append_to_json(log_path: str, row: dict):
@@ -148,11 +190,11 @@ def run_segment(videos: list[str]) -> list[tuple[str, str]]:
 # -----------------------------------------------------------------------------
 # Step 3+4+5 — Sample frames and filter via VLM
 # -----------------------------------------------------------------------------
-def run_filter(all_clips: list[tuple[str, str]]) -> list[str]:
+def run_filter(all_clips: list[tuple[str, str]]) -> tuple[list[str], int]:
     """
     For each clip, sample frames and send to Gemini for filtering.
     Skips clips already recorded in the CSV log.
-    Returns a list of clip paths that passed the filter.
+    Returns (passed_clip_paths, total_sampled_frames).
     """
     logger.info("=== STEPS 3-5: Sampling frames and filtering via Gemini ===")
 
@@ -174,6 +216,8 @@ def run_filter(all_clips: list[tuple[str, str]]) -> list[str]:
         f"{len(passed_clips)} passed so far."
     )
 
+    total_sampled_frames = 0
+
     for vid_id, clip_path in remaining:
         clip_name = Path(clip_path).stem
 
@@ -194,6 +238,8 @@ def run_filter(all_clips: list[tuple[str, str]]) -> list[str]:
             append_to_csv(config.FILTER_LOG_CSV, failed_row)
             append_to_json(config.FILTER_LOG_JSON, failed_row)
             continue
+
+        total_sampled_frames += len(frames)
 
         # Steps 4+5: VLM filter
         result = filter_clip(
@@ -220,15 +266,26 @@ def run_filter(all_clips: list[tuple[str, str]]) -> list[str]:
         if result.get("pass"):
             passed_clips.append(clip_path)
 
-    logger.info(f"Filtering complete. {len(passed_clips)} clips passed.")
-    return passed_clips
+    failed_count = len(all_clips) - len(passed_clips)
+    logger.info(
+        f"Filtering complete. "
+        f"Passed: {len(passed_clips)}, "
+        f"Failed: {failed_count}, "
+        f"Sampled frames: {total_sampled_frames}"
+    )
+    return passed_clips, total_sampled_frames
 
 
 # -----------------------------------------------------------------------------
 # Step 7 — Export at 1 FPS
 # -----------------------------------------------------------------------------
-def run_export(passed_clips: list[str]):
+def run_export(passed_clips: list[str]) -> int:
+    """
+    Export approved clips at 1 FPS.
+    Returns the total number of exported frames.
+    """
     logger.info("=== STEP 7: Exporting approved clips at 1 FPS ===")
+    total_exported_frames = 0
     for clip_path in passed_clips:
         # Reconstruct output path from clip path
         # data/clips/<video_id>/<clip_name>.mp4
@@ -247,11 +304,51 @@ def run_export(passed_clips: list[str]):
         # Skip if already exported
         if os.path.isdir(output_dir) and len(os.listdir(output_dir)) > 0:
             logger.info(f"Already exported, skipping: {clip_name}")
+            total_exported_frames += len([
+                f for f in os.listdir(output_dir) if f.endswith(".jpg")
+            ])
             continue
 
-        export_at_1fps(clip_path, output_dir)
+        frames = export_at_1fps(clip_path, output_dir)
+        total_exported_frames += len(frames)
 
-    logger.info("Export complete.")
+    logger.info(f"Export complete. Total exported frames: {total_exported_frames}")
+    return total_exported_frames
+
+
+# -----------------------------------------------------------------------------
+# Summary helpers — always scan disk so partial/resumed runs are accurate
+# -----------------------------------------------------------------------------
+def count_sampled_frames() -> int:
+    """Count JPEG frames under data/frames/ (sampled by the VLM filter step)."""
+    total = 0
+    if not os.path.isdir(config.FRAMES_DIR):
+        return total
+    for vid_id in os.listdir(config.FRAMES_DIR):
+        vid_dir = os.path.join(config.FRAMES_DIR, vid_id)
+        if not os.path.isdir(vid_dir):
+            continue
+        for clip_name in os.listdir(vid_dir):
+            clip_dir = os.path.join(vid_dir, clip_name)
+            if os.path.isdir(clip_dir):
+                total += sum(1 for f in os.listdir(clip_dir) if f.endswith(".jpg"))
+    return total
+
+
+def count_exported_frames() -> int:
+    """Count JPEG frames under data/filtered/ (exported at 1 FPS)."""
+    total = 0
+    if not os.path.isdir(config.FILTERED_DIR):
+        return total
+    for vid_id in os.listdir(config.FILTERED_DIR):
+        vid_dir = os.path.join(config.FILTERED_DIR, vid_id)
+        if not os.path.isdir(vid_dir):
+            continue
+        for clip_name in os.listdir(vid_dir):
+            clip_dir = os.path.join(vid_dir, clip_name)
+            if os.path.isdir(clip_dir):
+                total += sum(1 for f in os.listdir(clip_dir) if f.endswith(".jpg"))
+    return total
 
 
 # -----------------------------------------------------------------------------
@@ -294,9 +391,8 @@ def main():
                             all_clips.append((vid_id, os.path.join(clip_dir, f)))
 
     if step in ("filter", "all"):
-        passed_clips = run_filter(all_clips)
+        passed_clips, _ = run_filter(all_clips)
     else:
-        # Read passed clips from existing CSV log
         processed = load_processed_clips(config.FILTER_LOG_CSV)
         passed_clips = [
             row["clip_path"]
@@ -306,6 +402,38 @@ def main():
 
     if step in ("export", "all"):
         run_export(passed_clips)
+
+    # ------------------------------------------------------------------
+    # Write summary — totals are always read from disk/CSV so every run
+    # (including partial or resumed ones) produces accurate numbers.
+    # ------------------------------------------------------------------
+    processed    = load_processed_clips(config.FILTER_LOG_CSV)
+    raw_count    = len(get_all_videos(config.RAW_VIDEO_DIR))
+    total_clips  = len(all_clips)
+    passed_count = sum(1 for r in processed.values() if r["pass"] == "True")
+    failed_count = sum(1 for r in processed.values() if r["pass"] != "True")
+    sampled_frames  = count_sampled_frames()
+    exported_frames = count_exported_frames()
+
+    write_summary(
+        log_path=config.SUMMARY_LOG_CSV,
+        search_queries=config.SEARCH_QUERIES,
+        raw_videos=raw_count,
+        total_clips=total_clips,
+        passed_clips=passed_count,
+        failed_clips=failed_count,
+        sampled_frames=sampled_frames,
+        exported_frames=exported_frames,
+    )
+    logger.info(
+        f"=== RUN SUMMARY === "
+        f"raw_videos={raw_count}, "
+        f"total_clips={total_clips}, "
+        f"passed={passed_count}, "
+        f"failed={failed_count}, "
+        f"sampled_frames={sampled_frames}, "
+        f"exported_frames={exported_frames}"
+    )
 
 
 if __name__ == "__main__":
