@@ -32,25 +32,38 @@ YouTube Search
 
 ```
 ExoBaby-pipeline/
-├── .env                   # Your Gemini API key — never commit this
-├── config.py              # Search terms, thresholds, paths
-├── run_pipeline.py        # Main orchestrator
+├── .env                        # Your Gemini API key — never commit this
+├── config.py                   # Search terms, thresholds, paths (pipeline)
+├── requirements.txt
+│
+├── run_pipeline.py             # Orchestrator: download → segment → filter → export
 ├── pipeline/
-│   ├── downloader.py      # Step 1: YouTube search + download
-│   ├── segmenter.py       # Step 2: Split into 30s clips
-│   ├── sampler.py         # Step 3: Extract 4 frames per clip
-│   ├── vlm_filter.py      # Steps 4+5: Gemini filtering
-│   └── exporter.py        # Step 7: 1 FPS extraction
+│   ├── downloader.py           # Step 1: YouTube search + download
+│   ├── segmenter.py            # Step 2: Split into 30s clips
+│   ├── sampler.py              # Step 3: Extract 4 frames per clip
+│   ├── vlm_filter.py           # Steps 4+5: Gemini VLM filtering
+│   └── exporter.py             # Step 7: 1 FPS extraction
+│
+├── run_detection.py            # Orchestrator: detect → analyse (local GPU)
+├── detection/
+│   ├── config.py               # Thresholds, model IDs, colour palette, URLs
+│   ├── cdi_loader.py           # Download + parse BabyView CDI reference data
+│   ├── detector.py             # YOLOE + CLIP detection pipeline (resumable)
+│   ├── analysis.py             # Power-law fit + category summary
+│   └── visualizer.py           # Rank-bar, log-log, per-domain figures
+│
+├── ExoBaby_LongTailed_Colab.ipynb  # Colab notebook (thin — calls detection/)
+│
 ├── data/
-│   ├── raw_videos/        # Downloaded full videos
-│   ├── clips/             # 30s segments (organised by video ID)
-│   ├── frames/            # Sampled frames per clip
-│   └── filtered/          # 1 FPS frames from approved clips
-├── logs/
-│   ├── pipeline.log       # Full run log
-│   ├── filter_results.csv # Per-clip VLM decisions (open in Excel/Sheets)
-│   └── filter_results.json# Same data as a JSON array (for scripting)
-└── requirements.txt
+│   ├── raw_videos/             # Downloaded full videos
+│   ├── clips/                  # 30s segments (organised by video ID)
+│   ├── frames/                 # Sampled frames per clip
+│   └── filtered/               # 1 FPS frames from approved clips
+└── logs/
+    ├── pipeline.log            # Full run log
+    ├── filter_results.csv      # Per-clip VLM decisions (open in Excel/Sheets)
+    ├── filter_results.json     # Same data as JSON array (for scripting)
+    └── summary.csv             # Per-run totals
 ```
 
 ## Setup
@@ -74,9 +87,18 @@ ffmpeg -version
 
 ### 3. Install Python dependencies
 
+For the local pipeline (download → segment → filter → export):
 ```cmd
 pip install -r requirements.txt
 ```
+
+For the detection pipeline on a local GPU machine:
+```cmd
+pip install -r requirements-detection.txt
+```
+
+> **Colab users:** the first cell in `ExoBaby_LongTailed_Colab.ipynb` runs
+> `pip install -r requirements-detection.txt` automatically — nothing to do manually.
 
 ### 4. Set your Gemini API key
 
@@ -153,7 +175,7 @@ If you hit the daily quota, wait until the next day and re-run — no progress i
 
 ## Output
 
-The final dataset lives in `data/filtered/`. Each approved clip has its own subfolder of JPEG frames at 1 FPS, ready to feed into the object description pipeline.
+The final dataset lives in `data/filtered/`. Each approved clip has its own subfolder of JPEG frames at 1 FPS, ready to feed into the detection pipeline.
 
 ```
 data/filtered/
@@ -164,6 +186,75 @@ data/filtered/
         └── ...
 ```
 
+---
+
+## Detection Pipeline — Long-Tailed Distribution Analysis
+
+Replicates Finding 1 from Yang et al. (2026): runs YOLOE open-vocabulary detection
+on the 129 CDI noun categories, filters with CLIP ViT-B/32, fits a power-law, and
+compares the exponent α to the BabyView paper baseline (~1.93).
+
+### Run on a local GPU machine
+
+```cmd
+python run_detection.py --frames data/filtered --output ExoBaby-results
+```
+
+Individual steps:
+
+```cmd
+python run_detection.py --frames data/filtered --output ExoBaby-results --step detect
+python run_detection.py --frames data/filtered --output ExoBaby-results --step analyse
+```
+
+The `--step detect` run is **resumable** — already-processed frames are skipped.
+
+### Run on Google Colab (recommended — free T4 GPU)
+
+Open `ExoBaby_LongTailed_Colab.ipynb` in Colab. The notebook is thin: each step
+calls into the `detection/` package. To change a threshold or tweak a figure, edit
+the relevant module rather than the notebook.
+
+| Module | Responsibility |
+|---|---|
+| `detection/config.py` | All thresholds, model IDs, CDI colour palette |
+| `detection/cdi_loader.py` | Download + parse BabyView CDI reference files |
+| `detection/detector.py` | YOLOE + CLIP batch detection loop (resumable) |
+| `detection/analysis.py` | Category summary, power-law fit, comparison table |
+| `detection/visualizer.py` | Rank-bar, log-log, and per-domain figures |
+
+### Detection outputs
+
+```
+ExoBaby-results/
+├── data/
+│   ├── cdi_words.csv
+│   └── included_categories_valid129.txt
+├── frame_data/
+│   └── merged_frame_detections_with_metadata_filtered-0.27.csv
+└── analysis/
+    ├── results/
+    │   └── long_tailed_dist_prop_included_categories_filtered-0.27_valid129.csv
+    └── figures/
+        ├── fig1a_long_tailed_bar_valid129.png  (.pdf)
+        ├── fig1b_loglog_valid129.png  (.pdf)
+        └── fig2_per_domain_valid129.png
+```
+
+### Tuning the thresholds
+
+Edit `detection/config.py`:
+
+```python
+YOLOE_CONF_THRESHOLD = 0.25   # lower = more detections, more noise
+CLIP_SIM_THRESHOLD   = 0.27   # lower = more detections, lower precision
+```
+
+Re-run `--step detect` — it will only process frames not yet in the CSV.
+To re-run from scratch, delete the detection CSV first.
+
+---
+
 ## Common Errors
 
 | Error | Fix |
@@ -172,3 +263,6 @@ data/filtered/
 | `GEMINI_API_KEY is not set` | Add your key to `.env` |
 | `429 Too Many Requests` | Daily quota hit — wait until tomorrow and re-run |
 | `No module named 'cv2'` | Run `pip install -r requirements.txt` again |
+| `No module named 'ultralytics'` | Run the pip cell in the Colab notebook, or `pip install 'ultralytics>=8.3'` |
+| `No GPU found` in Colab | Runtime > Change runtime type > T4 GPU, then re-run all cells |
+| Detection CSV missing | Run `--step detect` (or the Colab Step 3 cell) before `--step analyse` |

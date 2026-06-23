@@ -1,3 +1,12 @@
+# =============================================================================
+# requirements.txt — Local pipeline dependencies
+# =============================================================================
+# Covers: run_pipeline.py and the pipeline/ package
+# (downloader, segmenter, sampler, vlm_filter, exporter)
+#
+# Install with:
+#   pip install -r requirements.txt
+
 yt-dlp==2026.3.17
 opencv-python==4.10.0.84
 Pillow==10.4.0
