@@ -6,21 +6,11 @@
 # Installed automatically by Step 0 of ExoBaby_LongTailed_Colab.ipynb.
 # For local GPU machines: pip install -r requirements-detection.txt
 #
-# Packages already present in Colab (numpy, scipy, pandas, matplotlib, tqdm,
-# requests, Pillow, huggingface_hub) are listed without version pins so Colab's
-# pre-installed versions are used and no conflicts are raised.
+# Only packages NOT pre-installed in Colab are listed here.
+# Never pin numpy, scipy, pandas, matplotlib, tqdm, requests, Pillow,
+# or huggingface_hub — Colab's pre-installed versions must be preserved
+# to avoid binary incompatibility errors (numpy dtype size mismatch etc.)
 
-# --- Core detection (not pre-installed in Colab) ---
 ultralytics>=8.3
 open-clip-torch>=2.20.0
 powerlaw>=1.5
-
-# --- Already in Colab — no version pin to avoid conflicts ---
-huggingface_hub
-pandas
-matplotlib
-scipy
-requests
-numpy
-tqdm
-Pillow
