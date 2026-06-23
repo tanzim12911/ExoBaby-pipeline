@@ -30,7 +30,7 @@ import torch
 import detection.config as cfg
 from detection.analysis   import build_category_summary, fit_power_law, print_summary
 from detection.cdi_loader import load_cdi_data
-from detection.detector   import load_models, run_detection, set_cdi_classes
+from detection.detector   import load_models, run_detection, set_cdi_classes, check_stale_rows
 from detection.visualizer import plot_loglog, plot_per_domain, plot_rank_bar
 
 # ---------------------------------------------------------------------------
@@ -92,7 +92,7 @@ def collect_frames(frames_dir: str) -> list[str]:
 # Step runners
 # ---------------------------------------------------------------------------
 
-def run_detect(frames_dir: str, shared_dirs: dict[str, str]) -> None:
+def run_detect(frames_dir: str, shared_dirs: dict[str, str], prune_stale: bool = False) -> None:
     device = "cuda" if torch.cuda.is_available() else "cpu"
     logger.info("Device: %s", device)
     if device == "cpu":
@@ -125,6 +125,7 @@ def run_detect(frames_dir: str, shared_dirs: dict[str, str]) -> None:
         clip_tokenizer=clip_tokenizer,
         device=device,
         batch_size=batch_size,
+        prune_stale=prune_stale,
     )
     logger.info("Detection CSV: %s", detection_csv)
 
@@ -204,13 +205,23 @@ def main() -> None:
         default="all",
         help="Which step to run (default: all).",
     )
+    parser.add_argument(
+        "--prune-stale",
+        action="store_true",
+        default=False,
+        help=(
+            "Remove rows from the detection CSV whose frame_path no longer "
+            "exists on disk before running. Use only when you have intentionally "
+            "deleted frames. Default: False (warn but do not modify CSV)."
+        ),
+    )
     args = parser.parse_args()
 
     shared_dirs   = resolve_shared_dirs(args.output)
     analysis_dirs = resolve_analysis_dirs(args.output, args.tag)
 
     if args.step in ("detect", "all"):
-        run_detect(args.frames, shared_dirs)
+        run_detect(args.frames, shared_dirs, prune_stale=args.prune_stale)
 
     if args.step in ("analyse", "all"):
         run_analyse(args.frames, shared_dirs, analysis_dirs)

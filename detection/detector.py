@@ -88,6 +88,79 @@ def set_cdi_classes(yoloe_model, included_categories: list[str]) -> None:
 
 
 # ---------------------------------------------------------------------------
+# Stale row checker
+# ---------------------------------------------------------------------------
+
+def check_stale_rows(output_csv: str, current_frame_paths: list[str]) -> int:
+    """
+    Compare the detection CSV against the current frame list and report
+    how many rows reference frames that no longer exist on disk.
+
+    Does NOT modify the CSV — only reports the count.
+    Returns the number of stale rows found.
+    """
+    if not os.path.exists(output_csv):
+        return 0
+
+    import pandas as pd
+
+    df          = pd.read_csv(output_csv)
+    current_set = set(current_frame_paths)
+    stale_mask  = ~df["frame_path"].isin(current_set)
+    stale_count = int(stale_mask.sum())
+
+    if stale_count > 0:
+        stale_frames = df.loc[stale_mask, "frame_path"].nunique()
+        logger.warning(
+            "\n"
+            "  ╔══════════════════════════════════════════════════════════╗\n"
+            "  ║  WARNING: Stale detections found in CSV                 ║\n"
+            "  ╠══════════════════════════════════════════════════════════╣\n"
+            "  ║  %d detection rows reference %d frame(s) not on disk.   \n"
+            "  ║                                                          ║\n"
+            "  ║  This could mean:                                        ║\n"
+            "  ║    a) You intentionally deleted those frames             ║\n"
+            "  ║       → safe to prune (set PRUNE_STALE = True)          ║\n"
+            "  ║    b) Drive has not fully synced yet                     ║\n"
+            "  ║       → do NOT prune, wait and re-run                   ║\n"
+            "  ║                                                          ║\n"
+            "  ║  Analysis will include these stale rows until pruned.   ║\n"
+            "  ╚══════════════════════════════════════════════════════════╝",
+            stale_count, stale_frames,
+        )
+    else:
+        logger.info("CSV check passed — no stale rows found.")
+
+    return stale_count
+
+
+def prune_stale_rows(output_csv: str, current_frame_paths: list[str]) -> int:
+    """
+    Remove rows from the detection CSV whose frame_path no longer exists
+    on disk. Rewrites the CSV in place.
+
+    Returns the number of rows removed.
+    """
+    if not os.path.exists(output_csv):
+        return 0
+
+    import pandas as pd
+
+    df          = pd.read_csv(output_csv)
+    current_set = set(current_frame_paths)
+    df_clean    = df[df["frame_path"].isin(current_set)]
+    removed     = len(df) - len(df_clean)
+
+    if removed > 0:
+        df_clean.to_csv(output_csv, index=False)
+        logger.info("Pruned %d stale rows. %d rows remaining.", removed, len(df_clean))
+    else:
+        logger.info("No stale rows to prune.")
+
+    return removed
+
+
+# ---------------------------------------------------------------------------
 # Resume helper
 # ---------------------------------------------------------------------------
 
@@ -118,12 +191,18 @@ def run_detection(
     batch_size: int = 32,
     yoloe_conf: float = YOLOE_CONF_THRESHOLD,
     clip_sim:   float = CLIP_SIM_THRESHOLD,
+    prune_stale: bool = False,
 ) -> None:
     """
     Run YOLOE detection + CLIP filtering on *frame_paths* and append
     passing detections to *output_csv*.
 
     Already-processed frames are skipped automatically (resumable).
+
+    Before processing, the CSV is checked for rows referencing frames that
+    no longer exist on disk:
+      - prune_stale=False (default): prints a warning, does not modify CSV.
+      - prune_stale=True: removes stale rows from the CSV before proceeding.
 
     Parameters
     ----------
@@ -143,11 +222,20 @@ def run_detection(
         YOLOE confidence threshold (default: from config).
     clip_sim : float
         CLIP cosine similarity threshold (default: from config).
+    prune_stale : bool
+        If True, remove CSV rows for frames not in frame_paths before running.
+        If False (default), warn about stale rows but leave CSV untouched.
     """
     os.makedirs(os.path.dirname(output_csv) or ".", exist_ok=True)
 
-    already_done   = load_already_done(output_csv)
-    frames_to_run  = [f for f in frame_paths if f not in already_done]
+    # --- Stale row check / prune ---
+    if prune_stale:
+        prune_stale_rows(output_csv, frame_paths)
+    else:
+        check_stale_rows(output_csv, frame_paths)
+
+    already_done  = load_already_done(output_csv)
+    frames_to_run = [f for f in frame_paths if f not in already_done]
 
     logger.info(
         "Detection: %d already done, %d remaining (total %d).",
