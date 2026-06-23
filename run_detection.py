@@ -2,14 +2,23 @@
 # run_detection.py — Orchestrator for the YOLOE+CLIP detection pipeline
 # =============================================================================
 # Usage (local, with GPU):
-#   python run_detection.py --frames data/filtered --output ExoBaby-results
+#   python run_detection.py --frames data/filtered --output ExoBaby-results --tag v1_42videos
 #
 # Usage (single steps):
-#   python run_detection.py --frames data/filtered --output ExoBaby-results --step detect
-#   python run_detection.py --frames data/filtered --output ExoBaby-results --step analyse
+#   python run_detection.py --frames data/filtered --output ExoBaby-results --tag v1_42videos --step detect
+#   python run_detection.py --frames data/filtered --output ExoBaby-results --tag v1_42videos --step analyse
 #
-# The detection step is resumable: already-processed frames are skipped.
-# All outputs (CSVs, figures) land under --output.
+# Output layout
+# -------------
+#   ExoBaby-results/
+#   ├── data/                        ← CDI reference files (shared)
+#   ├── frame_data/                  ← detection CSV (shared, resumable)
+#   └── analysis/
+#       ├── v1_42videos/             ← figures + summary CSV (versioned per tag)
+#       └── v2_60videos/
+#
+# The detection CSV is shared across all runs — new frames are appended,
+# already-processed frames are skipped. Only the analysis outputs are versioned.
 
 import argparse
 import logging
@@ -19,10 +28,10 @@ import sys
 import torch
 
 import detection.config as cfg
-from detection.analysis    import build_category_summary, fit_power_law, print_summary
-from detection.cdi_loader  import load_cdi_data
-from detection.detector    import load_models, run_detection, set_cdi_classes
-from detection.visualizer  import plot_loglog, plot_per_domain, plot_rank_bar
+from detection.analysis   import build_category_summary, fit_power_law, print_summary
+from detection.cdi_loader import load_cdi_data
+from detection.detector   import load_models, run_detection, set_cdi_classes
+from detection.visualizer import plot_loglog, plot_per_domain, plot_rank_bar
 
 # ---------------------------------------------------------------------------
 # Logging
@@ -39,20 +48,38 @@ logger = logging.getLogger("run_detection")
 # Path helpers
 # ---------------------------------------------------------------------------
 
-def resolve_output_dirs(output_base: str) -> dict[str, str]:
+def resolve_shared_dirs(output_base: str) -> dict[str, str]:
+    """
+    Shared directories — same location for every run.
+    The detection CSV lives here so resume always works.
+    """
     dirs = {
         "data":       os.path.join(output_base, cfg.DATA_SUBDIR),
         "frame_data": os.path.join(output_base, cfg.FRAME_DATA_SUBDIR),
-        "results":    os.path.join(output_base, cfg.RESULTS_SUBDIR),
-        "figures":    os.path.join(output_base, cfg.FIGURES_SUBDIR),
     }
     for d in dirs.values():
         os.makedirs(d, exist_ok=True)
     return dirs
 
 
+def resolve_analysis_dirs(output_base: str, run_tag: str) -> dict[str, str]:
+    """
+    Versioned directories — one subfolder per run tag.
+    Each run tag gets its own results/ and figures/ so nothing is overwritten.
+    """
+    analysis_root = os.path.join(output_base, cfg.ANALYSIS_SUBDIR, run_tag)
+    dirs = {
+        "results": os.path.join(analysis_root, "results"),
+        "figures": os.path.join(analysis_root, "figures"),
+    }
+    for d in dirs.values():
+        os.makedirs(d, exist_ok=True)
+    logger.info("Analysis output: %s", analysis_root)
+    return dirs
+
+
 def collect_frames(frames_dir: str) -> list[str]:
-    """Walk *frames_dir* and return all JPEG/PNG paths."""
+    """Walk *frames_dir* recursively and return all JPEG/PNG paths."""
     paths = []
     for root, _, files in os.walk(frames_dir):
         for f in sorted(files):
@@ -65,26 +92,25 @@ def collect_frames(frames_dir: str) -> list[str]:
 # Step runners
 # ---------------------------------------------------------------------------
 
-def run_detect(frames_dir: str, dirs: dict[str, str]) -> None:
+def run_detect(frames_dir: str, shared_dirs: dict[str, str]) -> None:
     device = "cuda" if torch.cuda.is_available() else "cpu"
     logger.info("Device: %s", device)
     if device == "cpu":
         logger.warning(
-            "No GPU detected. Detection on a large dataset will be very slow. "
-            "Consider running on a machine with a CUDA-capable GPU or on Colab (T4)."
+            "No GPU detected. Detection will be very slow. "
+            "Consider running on Colab (T4 GPU)."
         )
 
-    batch_size = 32 if device == "cuda" else 4
-    detection_csv = os.path.join(dirs["frame_data"], cfg.DETECTION_CSV_NAME)
+    batch_size    = 32 if device == "cuda" else 4
+    detection_csv = os.path.join(shared_dirs["frame_data"], cfg.DETECTION_CSV_NAME)
 
     frame_paths = collect_frames(frames_dir)
     logger.info("Found %d frames in %s", len(frame_paths), frames_dir)
-
     if not frame_paths:
         logger.error("No frames found. Check --frames path.")
         sys.exit(1)
 
-    included_categories, _ = load_cdi_data(dirs["data"])
+    included_categories, _ = load_cdi_data(shared_dirs["data"])
 
     yoloe_model, clip_model, clip_preprocess, clip_tokenizer = load_models(device)
     set_cdi_classes(yoloe_model, included_categories)
@@ -103,11 +129,15 @@ def run_detect(frames_dir: str, dirs: dict[str, str]) -> None:
     logger.info("Detection CSV: %s", detection_csv)
 
 
-def run_analyse(frames_dir: str, dirs: dict[str, str]) -> None:
+def run_analyse(
+    frames_dir: str,
+    shared_dirs: dict[str, str],
+    analysis_dirs: dict[str, str],
+) -> None:
     import pandas as pd
 
-    detection_csv    = os.path.join(dirs["frame_data"], cfg.DETECTION_CSV_NAME)
-    intermediate_csv = os.path.join(dirs["results"],    cfg.INTERMEDIATE_CSV_NAME)
+    detection_csv    = os.path.join(shared_dirs["frame_data"], cfg.DETECTION_CSV_NAME)
+    intermediate_csv = os.path.join(analysis_dirs["results"], cfg.INTERMEDIATE_CSV_NAME)
 
     if not os.path.exists(detection_csv):
         logger.error(
@@ -115,15 +145,14 @@ def run_analyse(frames_dir: str, dirs: dict[str, str]) -> None:
         )
         sys.exit(1)
 
-    frame_paths = collect_frames(frames_dir)
+    frame_paths  = collect_frames(frames_dir)
     total_frames = len(frame_paths)
     if total_frames == 0:
         logger.error("No frames found. Check --frames path.")
         sys.exit(1)
 
-    included_categories, lemma_to_semantic = load_cdi_data(dirs["data"])
+    included_categories, lemma_to_semantic = load_cdi_data(shared_dirs["data"])
 
-    # Build category summary
     df_cat = build_category_summary(
         detection_csv=detection_csv,
         included_categories=included_categories,
@@ -132,19 +161,13 @@ def run_analyse(frames_dir: str, dirs: dict[str, str]) -> None:
         output_csv=intermediate_csv,
     )
 
-    # Power-law fit
-    fit = fit_power_law(df_cat)
+    fit            = fit_power_law(df_cat)
+    total_detected = len(pd.read_csv(detection_csv))
 
-    # Total detections (for titles / summary)
-    df_raw = pd.read_csv(detection_csv)
-    total_detected = len(df_raw)
+    plot_rank_bar(df_cat, fit, total_frames, total_detected, analysis_dirs["figures"])
+    plot_loglog(fit["nonzero_df"], fit["counts_arr"], fit["alpha"], analysis_dirs["figures"])
+    plot_per_domain(df_cat, analysis_dirs["figures"])
 
-    # Figures
-    plot_rank_bar(df_cat, fit, total_frames, total_detected, dirs["figures"])
-    plot_loglog(fit["nonzero_df"], fit["counts_arr"], fit["alpha"], dirs["figures"])
-    plot_per_domain(df_cat, dirs["figures"])
-
-    # Console summary
     print_summary(df_cat, fit, total_frames, total_detected)
 
 
@@ -159,12 +182,21 @@ def main() -> None:
     parser.add_argument(
         "--frames",
         required=True,
-        help="Path to the directory containing filtered frames (data/filtered).",
+        help="Path to filtered frames directory (e.g. data/filtered).",
     )
     parser.add_argument(
         "--output",
         default="ExoBaby-results",
-        help="Root directory for all outputs (default: ExoBaby-results).",
+        help="Root output directory (default: ExoBaby-results).",
+    )
+    parser.add_argument(
+        "--tag",
+        required=True,
+        help=(
+            "Run tag — describes what is different about this run. "
+            "Used as the analysis subfolder name. "
+            "Examples: v1_42videos, v2_60videos, v3_threshold-0.25"
+        ),
     )
     parser.add_argument(
         "--step",
@@ -174,13 +206,14 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    dirs = resolve_output_dirs(args.output)
+    shared_dirs   = resolve_shared_dirs(args.output)
+    analysis_dirs = resolve_analysis_dirs(args.output, args.tag)
 
     if args.step in ("detect", "all"):
-        run_detect(args.frames, dirs)
+        run_detect(args.frames, shared_dirs)
 
     if args.step in ("analyse", "all"):
-        run_analyse(args.frames, dirs)
+        run_analyse(args.frames, shared_dirs, analysis_dirs)
 
 
 if __name__ == "__main__":

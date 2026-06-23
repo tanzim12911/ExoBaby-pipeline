@@ -75,10 +75,15 @@ BABYVIEW_TOP5: list[tuple] = [
 # ---------------------------------------------------------------------------
 # Output sub-folder names (resolved at runtime relative to OUTPUT_BASE)
 # ---------------------------------------------------------------------------
-DATA_SUBDIR:        str = "data"
-FRAME_DATA_SUBDIR:  str = "frame_data"
-RESULTS_SUBDIR:     str = os.path.join("analysis", "results")
-FIGURES_SUBDIR:     str = os.path.join("analysis", "figures")
+
+# frame_data/ is SHARED across all runs — the detection CSV lives here.
+# It is always appended to (never replaced) so resume works across runs.
+DATA_SUBDIR:       str = "data"
+FRAME_DATA_SUBDIR: str = "frame_data"
+
+# analysis/ is VERSIONED per run — each run tag gets its own subfolder.
+# Pass the run tag to resolve_analysis_dirs() in run_detection.py.
+ANALYSIS_SUBDIR:   str = "analysis"
 
 DETECTION_CSV_NAME: str = (
     f"merged_frame_detections_with_metadata_filtered-{CLIP_SIM_THRESHOLD}.csv"
