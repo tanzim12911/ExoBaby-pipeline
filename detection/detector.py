@@ -87,6 +87,32 @@ def set_cdi_classes(yoloe_model, included_categories: list[str]) -> None:
     )
 
 
+def precompute_text_embeddings(
+    included_categories: list[str],
+    clip_model,
+    clip_tokenizer,
+    device: str,
+) -> torch.Tensor:
+    """
+    Pre-compute and cache CLIP text embeddings for all CDI category labels.
+
+    These never change between batches, so computing them once at startup
+    eliminates redundant text encoding on every detection.
+
+    Returns
+    -------
+    torch.Tensor of shape (n_categories, embed_dim), L2-normalised,
+    on *device*. Index i corresponds to included_categories[i].
+    """
+    logger.info("Pre-computing CLIP text embeddings for %d categories ...", len(included_categories))
+    tokens = clip_tokenizer(included_categories).to(device)
+    with torch.no_grad():
+        text_feats = clip_model.encode_text(tokens)
+        text_feats /= text_feats.norm(dim=-1, keepdim=True)
+    logger.info("Text embeddings ready — shape: %s", list(text_feats.shape))
+    return text_feats  # (n_categories, D)
+
+
 # ---------------------------------------------------------------------------
 # Stale row checker
 # ---------------------------------------------------------------------------
@@ -192,6 +218,7 @@ def run_detection(
     yoloe_conf: float = YOLOE_CONF_THRESHOLD,
     clip_sim:   float = CLIP_SIM_THRESHOLD,
     prune_stale: bool = False,
+    text_embeds: torch.Tensor = None,
 ) -> None:
     """
     Run YOLOE detection + CLIP filtering on *frame_paths* and append
@@ -225,6 +252,11 @@ def run_detection(
     prune_stale : bool
         If True, remove CSV rows for frames not in frame_paths before running.
         If False (default), warn about stale rows but leave CSV untouched.
+    text_embeds : torch.Tensor, optional
+        Pre-computed CLIP text embeddings (n_categories, D), L2-normalised.
+        If None, they are computed here from clip_tokenizer + included_categories.
+        Pass them in from precompute_text_embeddings() to avoid recomputing
+        when calling run_detection multiple times in the same session.
     """
     os.makedirs(os.path.dirname(output_csv) or ".", exist_ok=True)
 
@@ -246,6 +278,12 @@ def run_detection(
         logger.info("All frames already processed — nothing to do.")
         return
 
+    # Pre-compute text embeddings if not supplied by caller
+    if text_embeds is None:
+        text_embeds = precompute_text_embeddings(
+            included_categories, clip_model, clip_tokenizer, device
+        )
+
     write_header = not os.path.exists(output_csv)
     n_errors     = 0
 
@@ -264,10 +302,10 @@ def run_detection(
                 _process_batch(
                     batch,
                     included_categories,
+                    text_embeds,
                     yoloe_model,
                     clip_model,
                     clip_preprocess,
-                    clip_tokenizer,
                     device,
                     yoloe_conf,
                     clip_sim,
@@ -290,32 +328,62 @@ def run_detection(
 def _process_batch(
     batch: list[str],
     included_categories: list[str],
+    text_embeds: torch.Tensor,
     yoloe_model,
     clip_model,
     clip_preprocess,
-    clip_tokenizer,
     device: str,
     yoloe_conf: float,
     clip_sim_thresh: float,
     writer: csv.DictWriter,
 ) -> None:
-    """Detect objects in one batch and write passing detections to *writer*."""
+    """
+    Detect objects in one batch and write passing detections to *writer*.
+
+    Performance notes
+    -----------------
+    - text_embeds are pre-computed once outside this function — no text
+      encoding happens here, just an index lookup per detection.
+    - Images are opened once with PIL, then passed to YOLOE as numpy arrays
+      so the same pixel data is reused for cropping without a second disk read.
+    - autocast uses the non-deprecated torch.amp.autocast API.
+    """
+    # Open all images once and convert to numpy for YOLOE
+    images: list[Image.Image] = []
+    valid_paths: list[str]    = []
+    np_frames: list           = []
+
+    import numpy as np
+
+    for path in batch:
+        try:
+            img = Image.open(path).convert("RGB")
+            images.append(img)
+            valid_paths.append(path)
+            np_frames.append(np.array(img))
+        except Exception as exc:
+            logger.warning("Could not open %s: %s", path, exc)
+
+    if not np_frames:
+        return
+
+    # YOLOE inference on numpy arrays — no second disk read
     results = yoloe_model.predict(
-        batch,
+        np_frames,
         conf=yoloe_conf,
         verbose=False,
         device=device,
         imgsz=640,
     )
 
-    det_records: list[dict] = []
-    crops: list[torch.Tensor] = []
+    det_records: list[dict]      = []
+    crops:       list[torch.Tensor] = []
+    cat_indices: list[int]       = []   # index into text_embeds for each crop
 
-    for frame_path, result in zip(batch, results):
+    for img, frame_path, result in zip(images, valid_paths, results):
         if result.boxes is None or not len(result.boxes):
             continue
 
-        img = Image.open(frame_path).convert("RGB")
         w, h = img.size
 
         for box in result.boxes:
@@ -324,7 +392,6 @@ def _process_batch(
             conf       = float(box.conf[0])
             xmin, ymin, xmax, ymax = box.xyxy[0].tolist()
 
-            # Clamp to image boundaries
             xmin = max(0, int(xmin))
             ymin = max(0, int(ymin))
             xmax = min(w, int(xmax))
@@ -333,32 +400,30 @@ def _process_batch(
             if xmax <= xmin or ymax <= ymin:
                 continue
 
-            crop_tensor = clip_preprocess(img.crop((xmin, ymin, xmax, ymax)))
-            crops.append(crop_tensor)
-            det_records.append(
-                {"frame_path": frame_path, "class_name": class_name, "confidence": round(conf, 4)}
-            )
+            crops.append(clip_preprocess(img.crop((xmin, ymin, xmax, ymax))))
+            cat_indices.append(cls_id)
+            det_records.append({
+                "frame_path": frame_path,
+                "class_name": class_name,
+                "confidence": round(conf, 4),
+            })
 
     if not crops:
         return
 
     crops_stacked = torch.stack(crops).to(device)
-    labels        = [r["class_name"] for r in det_records]
-    text_tokens   = clip_tokenizer(labels).to(device)
 
-    autocast_ctx = (
-        torch.cuda.amp.autocast() if device == "cuda" else torch.no_grad()
-    )
+    # Image encoding only — text embeddings are pre-computed
+    autocast_ctx = torch.amp.autocast("cuda") if device == "cuda" else torch.no_grad()
     with torch.no_grad(), autocast_ctx:
-        img_feat  = clip_model.encode_image(crops_stacked)
-        text_feat = clip_model.encode_text(text_tokens)
-        img_feat  /= img_feat.norm(dim=-1, keepdim=True)
-        text_feat /= text_feat.norm(dim=-1, keepdim=True)
-        sims = (img_feat * text_feat).sum(dim=-1).cpu().numpy()
+        img_feats = clip_model.encode_image(crops_stacked)
+        img_feats /= img_feats.norm(dim=-1, keepdim=True)
+
+    # Cosine similarity: dot product against the relevant text embedding per crop
+    # text_embeds[cat_indices] gathers exactly the label embedding for each detection
+    relevant_text = text_embeds[cat_indices]          # (n_dets, D)
+    sims = (img_feats * relevant_text).sum(dim=-1).cpu().numpy()
 
     for record, sim in zip(det_records, sims):
         if sim >= clip_sim_thresh:
-            writer.writerow({
-                **record,
-                "clip_similarity": round(float(sim), 4),
-            })
+            writer.writerow({**record, "clip_similarity": round(float(sim), 4)})
