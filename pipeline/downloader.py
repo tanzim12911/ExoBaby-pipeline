@@ -196,6 +196,74 @@ def _download_feed(
     return downloaded_paths
 
 
+def download_direct(
+    urls_file: str,
+    output_dir: str,
+    video_format: str,
+    merge_format: str = "mp4",
+) -> list[str]:
+    """
+    Download a specific list of YouTube videos from a plain-text file.
+
+    Each line in the file can be:
+      - A full URL: https://www.youtube.com/watch?v=VIDEO_ID
+      - A short URL: https://youtu.be/VIDEO_ID
+      - A bare video ID (11 characters)
+
+    Blank lines and lines starting with '#' are ignored.
+    Videos already in the download archive are skipped.
+    Returns a list of file paths for successfully downloaded videos.
+    """
+    if not os.path.exists(urls_file):
+        logger.info(f"No direct-videos file found at '{urls_file}', skipping.")
+        return []
+
+    with open(urls_file, encoding="utf-8") as f:
+        entries = [
+            line.strip()
+            for line in f
+            if line.strip() and not line.strip().startswith("#")
+        ]
+
+    if not entries:
+        logger.info(f"Direct-videos file '{urls_file}' is empty, skipping.")
+        return []
+
+    # Normalise bare IDs to full watch URLs
+    urls = [
+        e if e.startswith("http") else f"https://www.youtube.com/watch?v={e}"
+        for e in entries
+    ]
+
+    os.makedirs(output_dir, exist_ok=True)
+    archive_file = os.path.join(output_dir, "downloaded.txt")
+    downloaded_paths = []
+
+    def progress_hook(d):
+        if d["status"] == "finished":
+            downloaded_paths.append(d["filename"])
+            logger.info(f"Downloaded: {d['filename']}")
+
+    ydl_opts = {
+        "format": video_format,
+        "outtmpl": os.path.join(output_dir, "%(id)s.%(ext)s"),
+        "noplaylist": True,
+        "download_archive": archive_file,
+        "progress_hooks": [progress_hook],
+        "quiet": True,
+        "no_warnings": True,
+        "ignoreerrors": True,
+        "merge_output_format": merge_format,
+    }
+
+    logger.info(f"Downloading {len(urls)} direct video(s) from '{urls_file}'")
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        ydl.download(urls)
+
+    logger.info(f"Direct downloads complete. {len(downloaded_paths)} new video(s) downloaded.")
+    return downloaded_paths
+
+
 def get_all_videos(output_dir: str) -> list[str]:
     """Return paths of all video files (.mp4, .webm, .mkv) in output_dir."""
     extensions = (".mp4", ".webm", ".mkv")

@@ -50,6 +50,17 @@ CLIP_DURATION_SECONDS = 30
 # --- Frame Sampling ---
 FRAMES_PER_CLIP = 4
 
+# --- Direct Video Downloads ---
+# Path to a plain-text file listing specific videos to download.
+# One entry per line. Accepted formats (mix freely):
+#   https://www.youtube.com/watch?v=VIDEO_ID
+#   https://youtu.be/VIDEO_ID
+#   VIDEO_ID   ← bare 11-character YouTube ID
+#
+# Blank lines and lines starting with # are ignored.
+# If the file does not exist the step is silently skipped.
+DIRECT_VIDEOS_FILE = "data/direct_videos.txt"
+
 # --- Paths ---
 RAW_VIDEO_DIR   = "data/raw_videos"
 CLIPS_DIR       = "data/clips"

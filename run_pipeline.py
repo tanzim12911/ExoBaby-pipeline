@@ -151,6 +151,12 @@ def run_download():
             video_format=config.VIDEO_FORMAT,
             merge_format=config.VIDEO_MERGE_FORMAT,
         )
+    download_direct(
+        urls_file=config.DIRECT_VIDEOS_FILE,
+        output_dir=config.RAW_VIDEO_DIR,
+        video_format=config.VIDEO_FORMAT,
+        merge_format=config.VIDEO_MERGE_FORMAT,
+    )
     videos = get_all_videos(config.RAW_VIDEO_DIR)
     logger.info(f"Total videos available: {len(videos)}")
     return videos
