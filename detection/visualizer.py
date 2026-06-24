@@ -13,6 +13,9 @@
 #
 #   plot_per_domain(df_cat, figures_dir)
 #       -> str
+#
+#   plot_provenance(df_prov, top_n, figures_dir)
+#       -> str
 
 import logging
 import os
@@ -178,6 +181,129 @@ def plot_per_domain(df_cat, figures_dir: str) -> str:
     fig.suptitle("Per-Domain Object Distribution (ExoBaby Exocentric)", fontsize=14, y=1.01)
     fig.tight_layout()
     out_path = _save_figure(fig, figures_dir, f"fig2_per_domain_{_CATEGORY_SET}.png")
+    return out_path
+
+
+# ---------------------------------------------------------------------------
+# Figure 3: Provenance — top-N categories per domain × video breakdown
+# ---------------------------------------------------------------------------
+
+def plot_provenance(
+    df_prov,
+    top_n: int,
+    figures_dir: str,
+) -> str:
+    """
+    For each CDI semantic domain, draw a stacked horizontal bar chart showing
+    the top-N categories with each bar segment representing one source video.
+
+    Highlights dataset bias: if one video dominates a category, that
+    category's frequency reflects that video's setting, not a general pattern.
+
+    Parameters
+    ----------
+    df_prov : pd.DataFrame
+        Output of build_provenance() — columns: domain, category,
+        video_id, detection_count, pct_of_category.
+    top_n : int
+        Number of categories shown per domain (used in the figure title).
+    figures_dir : str
+        Directory where figures are saved.
+
+    Returns
+    -------
+    str — path to the saved PNG, or empty string if no data.
+    """
+    present_domains = [d for d in CDI_SEMANTIC_ORDER if d in df_prov["domain"].values]
+    if not present_domains:
+        logger.warning("plot_provenance: no domains in provenance data, skipping.")
+        return ""
+
+    # Consistent color per video ID across all subplots
+    all_videos   = sorted(df_prov["video_id"].unique())
+    palette      = plt.cm.get_cmap("tab20", max(len(all_videos), 1))
+    video_colors = {vid: palette(i) for i, vid in enumerate(all_videos)}
+
+    ncols     = 3
+    nrows     = -(-len(present_domains) // ncols)
+    row_height = max(0.5 * top_n, 2.5)
+    fig, axes = plt.subplots(
+        nrows, ncols,
+        figsize=(6.5 * ncols, row_height * nrows),
+    )
+    axes_flat = np.atleast_1d(axes).flatten()
+
+    for ax, domain in zip(axes_flat, present_domains):
+        domain_data = df_prov[df_prov["domain"] == domain]
+
+        # Categories ordered by total detections, largest at top
+        cat_totals = (
+            domain_data.groupby("category")["detection_count"]
+            .sum()
+            .sort_values(ascending=True)
+        )
+        categories  = cat_totals.index.tolist()
+        y_positions = np.arange(len(categories))
+
+        for y, category in zip(y_positions, categories):
+            cat_data = (
+                domain_data[domain_data["category"] == category]
+                .sort_values("detection_count", ascending=False)
+            )
+            left = 0.0
+            for _, vrow in cat_data.iterrows():
+                vid   = vrow["video_id"]
+                count = vrow["detection_count"]
+                ax.barh(y, count, left=left,
+                        color=video_colors[vid], height=0.6, linewidth=0)
+                # Label segment if wide enough to read (>=8% of bar)
+                if vrow["pct_of_category"] >= 8:
+                    ax.text(
+                        left + count / 2, y,
+                        f"{vrow['pct_of_category']:.0f}%",
+                        ha="center", va="center",
+                        fontsize=7, color="white", fontweight="bold",
+                    )
+                left += count
+
+        ax.set_yticks(y_positions)
+        ax.set_yticklabels(categories, fontsize=9)
+        ax.set_xlabel("Detection count", fontsize=10)
+        ax.set_title(
+            domain.replace("_", " ").title(),
+            fontsize=11,
+            color=CDI_SEMANTIC_COLORS.get(domain, "#8B9A9E"),
+            fontweight="bold",
+        )
+        _style_ax(ax)
+
+    for ax in axes_flat[len(present_domains):]:
+        ax.set_visible(False)
+
+    # Global legend — one patch per video, below the figure
+    legend_patches = [
+        mpatches.Patch(color=video_colors[vid], label=vid)
+        for vid in all_videos
+    ]
+    fig.legend(
+        handles=legend_patches,
+        title="Source video ID",
+        loc="lower center",
+        ncol=min(len(all_videos), 6),
+        fontsize=9,
+        title_fontsize=10,
+        bbox_to_anchor=(0.5, -0.02),
+        framealpha=0.9,
+    )
+
+    fig.suptitle(
+        f"Provenance: Top-{top_n} Categories per Domain — Source Video Breakdown",
+        fontsize=13, y=1.01,
+    )
+    fig.tight_layout()
+    out_path = _save_figure(
+        fig, figures_dir, f"fig3_provenance_top{top_n}_{_CATEGORY_SET}.png"
+    )
     return out_path
 
 

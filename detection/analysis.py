@@ -15,6 +15,9 @@
 #
 #   print_summary(df_cat, fit, total_frames, total_detected)
 #       -> None
+#
+#   build_provenance(detection_csv, df_cat, output_csv, top_n)
+#       -> pd.DataFrame
 
 import logging
 
@@ -215,3 +218,114 @@ def print_summary(
     else:
         print("  📊 α > paper value — distribution is MORE steep (more concentrated) than egocentric.")
     print(sep)
+
+
+# ---------------------------------------------------------------------------
+# Provenance analysis
+# ---------------------------------------------------------------------------
+
+def build_provenance(
+    detection_csv: str,
+    df_cat: pd.DataFrame,
+    output_csv: str,
+    top_n: int = 5,
+) -> pd.DataFrame:
+    """
+    For each CDI semantic domain, identify the top-N categories by frame
+    count, then break down each category's detections by source video.
+
+    The video ID is parsed from the frame path, which follows the structure:
+        .../filtered/<video_id>/<clip_name>/frame_XXXX.jpg
+
+    Parameters
+    ----------
+    detection_csv : str
+        Path to the YOLOE+CLIP output CSV (from detector.py).
+    df_cat : pd.DataFrame
+        Output of build_category_summary() — provides domain labels and
+        category ranks.
+    output_csv : str
+        Where to save the provenance CSV.
+    top_n : int
+        How many top categories to include per domain (default: 5).
+
+    Returns
+    -------
+    pd.DataFrame with columns:
+        domain, category, video_id, detection_count, pct_of_category
+    Sorted by domain → category rank → detection_count descending.
+    """
+    import os
+
+    df_det = pd.read_csv(detection_csv, usecols=["frame_path", "class_name"])
+    df_det["class_name"] = df_det["class_name"].astype(str).str.strip().str.lower()
+    df_det["frame_path"] = df_det["frame_path"].astype(str).str.strip()
+
+    # Parse video_id from frame path:
+    # Works for both Unix (/filtered/VIDEO_ID/clip/frame.jpg)
+    # and Windows (\filtered\VIDEO_ID\clip\frame.jpg) paths stored in the CSV
+    def _extract_video_id(path: str) -> str:
+        parts = path.replace("\\", "/").split("/")
+        try:
+            idx = next(
+                i for i, p in enumerate(parts)
+                if p.lower() == "filtered"
+            )
+            return parts[idx + 1]
+        except (StopIteration, IndexError):
+            return "unknown"
+
+    df_det["video_id"] = df_det["frame_path"].map(_extract_video_id)
+
+    # Build per-domain top-N category list (ranked by count_frames from df_cat)
+    from detection.config import CDI_SEMANTIC_ORDER
+
+    rows = []
+    for domain in CDI_SEMANTIC_ORDER:
+        domain_cats = df_cat[df_cat["cdi_semantic"] == domain].head(top_n)
+        if domain_cats.empty:
+            continue
+
+        for _, cat_row in domain_cats.iterrows():
+            category = cat_row["category"]
+
+            # Detections for this category across all videos
+            cat_det = df_det[df_det["class_name"] == category]
+            total_cat_detections = len(cat_det)
+
+            if total_cat_detections == 0:
+                continue
+
+            # Per-video breakdown
+            per_video = (
+                cat_det.groupby("video_id")
+                .size()
+                .reset_index(name="detection_count")
+                .sort_values("detection_count", ascending=False)
+            )
+            per_video["pct_of_category"] = (
+                per_video["detection_count"] / total_cat_detections * 100
+            ).round(1)
+            per_video["domain"]   = domain
+            per_video["category"] = category
+
+            rows.append(per_video)
+
+    if not rows:
+        logger.warning("Provenance: no detections found — returning empty DataFrame.")
+        return pd.DataFrame(
+            columns=["domain", "category", "video_id", "detection_count", "pct_of_category"]
+        )
+
+    df_prov = pd.concat(rows, ignore_index=True)[
+        ["domain", "category", "video_id", "detection_count", "pct_of_category"]
+    ]
+
+    df_prov.to_csv(output_csv, index=False)
+    logger.info(
+        "Provenance saved to %s  (%d rows, %d unique videos)",
+        output_csv,
+        len(df_prov),
+        df_prov["video_id"].nunique(),
+    )
+    return df_prov

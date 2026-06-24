@@ -92,3 +92,9 @@ INTERMEDIATE_CSV_NAME: str = (
     f"long_tailed_dist_prop_included_categories_"
     f"filtered-{CLIP_SIM_THRESHOLD}_valid129.csv"
 )
+PROVENANCE_CSV_NAME: str = (
+    f"provenance_top{{n}}_per_domain_filtered-{CLIP_SIM_THRESHOLD}.csv"
+)
+
+# Number of top categories per CDI domain for provenance analysis
+TOP_N_PER_DOMAIN: int = 5
