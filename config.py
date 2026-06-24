@@ -32,7 +32,7 @@ GEMINI_MODEL = "gemini-3.1-flash-lite"
 #
 # Mix both as needed. Hashtag URLs tend to surface more relevant content.
 SEARCH_QUERIES = [
-    "https://www.youtube.com/hashtag/bangladeshibabyvlogger",
+    #"https://www.youtube.com/hashtag/bangladeshibabyvlogger",
 ]
 
 # Number of videos to download per search query

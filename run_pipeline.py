@@ -19,7 +19,7 @@ from datetime import datetime
 from pathlib import Path
 
 import config
-from pipeline.downloader import search_and_download, get_all_videos
+from pipeline.downloader import search_and_download, download_direct, get_all_videos
 from pipeline.segmenter  import segment_video
 from pipeline.sampler    import sample_frames
 from pipeline.vlm_filter import filter_clip
