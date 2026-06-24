@@ -22,18 +22,16 @@ GEMINI_RATE_LIMIT_SECONDS = 4
 GEMINI_MODEL = "gemini-3.1-flash-lite"
 
 # --- YouTube Search ---
-# You can use two formats here:
+# Path to a plain-text file listing search queries to run.
+# One entry per line. Three formats are accepted (mix freely):
 #
-# 1. Plain text search (less precise):
-#    "Bangladeshi baby daily routine vlog"
+#   https://www.youtube.com/hashtag/bangladeshibabyvlogger
+#   https://www.youtube.com/playlist?list=PLxxxxxxxxxxxxxxxx
+#   Bangladeshi baby vlog   ← plain text search
 #
-# 2. Hashtag URL (more precise — scrapes the actual hashtag feed):
-#    "https://www.youtube.com/hashtag/bangladeshibabyvlog"
-#
-# Mix both as needed. Hashtag URLs tend to surface more relevant content.
-SEARCH_QUERIES = [
-    #"https://www.youtube.com/hashtag/bangladeshibabyvlogger",
-]
+# Blank lines and lines starting with # are ignored.
+# If the file does not exist the step is silently skipped.
+SEARCH_QUERIES_FILE = "data/search_queries.txt"
 
 # Number of videos to download per search query
 MAX_VIDEOS_PER_QUERY = 10

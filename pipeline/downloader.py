@@ -55,10 +55,62 @@ def search_and_download(
             query, max_videos, output_dir, archive_file, video_format, merge_format
         )
 
+    # YouTube playlist URLs need special handling — the feed walker uses
+    # playliststart/playlistend which conflicts with playlist extraction.
+    is_playlist = "list=" in query and "hashtag" not in query
+
+    if is_playlist:
+        return _download_playlist(
+            query, max_videos, output_dir, archive_file, video_format, merge_format
+        )
+
     # For feeds/hashtags: walk the feed in batches, stop once we have enough.
     return _download_feed(
         query, max_videos, output_dir, archive_file, video_format, merge_format
     )
+
+
+def _download_playlist(
+    url: str,
+    max_videos: int,
+    output_dir: str,
+    archive_file: str,
+    video_format: str,
+    merge_format: str,
+) -> list[str]:
+    """
+    Download up to max_videos from a YouTube playlist URL
+    (e.g. https://www.youtube.com/playlist?list=PL...).
+
+    Uses playlistend to cap the count and the download archive to skip
+    already-downloaded videos.
+    """
+    downloaded_paths = []
+
+    def progress_hook(d):
+        if d["status"] == "finished":
+            downloaded_paths.append(d["filename"])
+            logger.info(f"Downloaded: {d['filename']}")
+
+    ydl_opts = {
+        "format": video_format,
+        "outtmpl": os.path.join(output_dir, "%(id)s.%(ext)s"),
+        "noplaylist": False,
+        "playlistend": max_videos,
+        "download_archive": archive_file,
+        "progress_hooks": [progress_hook],
+        "quiet": True,
+        "no_warnings": True,
+        "ignoreerrors": True,
+        "merge_output_format": merge_format,
+    }
+
+    logger.info(f"Playlist: '{url}' (up to {max_videos} videos)")
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        ydl.download([url])
+
+    logger.info(f"  Done. {len(downloaded_paths)} new video(s) downloaded.")
+    return downloaded_paths
 
 
 def _download_text_search(

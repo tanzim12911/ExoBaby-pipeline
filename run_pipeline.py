@@ -77,12 +77,22 @@ def write_summary(
     failed_clips: int,
     sampled_frames: int,
     exported_frames: int,
-    search_queries: list[str] | None = None,
+    search_queries_file: str | None = None,
 ):
     """
     Append one summary row to the run-summary CSV.
     Creates the file with a header if it does not yet exist.
     """
+    # Read active queries from the file for the log column
+    queries: list[str] = []
+    if search_queries_file and os.path.exists(search_queries_file):
+        with open(search_queries_file, encoding="utf-8") as f:
+            queries = [
+                line.strip()
+                for line in f
+                if line.strip() and not line.strip().startswith("#")
+            ]
+
     file_exists = os.path.exists(log_path)
     fieldnames = [
         "timestamp",
@@ -100,7 +110,7 @@ def write_summary(
             writer.writeheader()
         writer.writerow({
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "search_queries": " | ".join(search_queries) if search_queries else "",
+            "search_queries": " | ".join(queries) if queries else "",
             "raw_videos": raw_videos,
             "total_clips": total_clips,
             "passed_clips": passed_clips,
@@ -143,7 +153,22 @@ def append_to_json(log_path: str, row: dict):
 # -----------------------------------------------------------------------------
 def run_download():
     logger.info("=== STEP 1: Downloading videos ===")
-    for query in config.SEARCH_QUERIES:
+
+    # Load search queries from file
+    queries = []
+    if os.path.exists(config.SEARCH_QUERIES_FILE):
+        with open(config.SEARCH_QUERIES_FILE, encoding="utf-8") as f:
+            queries = [
+                line.strip()
+                for line in f
+                if line.strip() and not line.strip().startswith("#")
+            ]
+    if queries:
+        logger.info(f"Loaded {len(queries)} search quer{'y' if len(queries) == 1 else 'ies'} from '{config.SEARCH_QUERIES_FILE}'")
+    else:
+        logger.info(f"No search queries found in '{config.SEARCH_QUERIES_FILE}', skipping search downloads.")
+
+    for query in queries:
         search_and_download(
             query=query,
             max_videos=config.MAX_VIDEOS_PER_QUERY,
@@ -423,7 +448,7 @@ def main():
 
     write_summary(
         log_path=config.SUMMARY_LOG_CSV,
-        search_queries=config.SEARCH_QUERIES,
+        search_queries_file=config.SEARCH_QUERIES_FILE,
         raw_videos=raw_count,
         total_clips=total_clips,
         passed_clips=passed_count,

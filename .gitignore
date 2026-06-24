@@ -1,6 +1,10 @@
 # Data — too large for git, use shared drive
 data/
 
+# But track the query/URL input files so the pipeline is reproducible
+!data/search_queries.txt
+!data/direct_videos.txt
+
 # Logs
 logs/
 
