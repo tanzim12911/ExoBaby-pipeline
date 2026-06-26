@@ -350,33 +350,27 @@ def _process_batch(
     Performance notes
     -----------------
     - text_embeds are pre-computed once outside this function — no text
-      encoding happens here, just an index lookup per detection.
-    - Images are opened once with PIL, then passed to YOLOE as numpy arrays
-      so the same pixel data is reused for cropping without a second disk read.
-    - autocast uses the non-deprecated torch.amp.autocast API.
+    YOLOE receives file paths directly (same as the original notebook) so that
+    its internal OpenCV loader reads images in BGR — the format the model was
+    trained with. Passing RGB numpy arrays causes red/blue channel confusion
+    and produces completely different (wrong) detections.
+
+    PIL is used only for CLIP crop extraction, where RGB is correct.
     """
-    # Open all images once and convert to numpy for YOLOE
-    images: list[Image.Image] = []
-    valid_paths: list[str]    = []
-    np_frames: list           = []
-
-    import numpy as np
-
+    # ── YOLOE inference via file paths (OpenCV BGR internally, matches original) ──
+    # Filter out any paths that can't be read before calling YOLOE
+    valid_paths: list[str] = []
     for path in batch:
-        try:
-            img = Image.open(path).convert("RGB")
-            images.append(img)
+        if os.path.isfile(path):
             valid_paths.append(path)
-            np_frames.append(np.array(img))
-        except Exception as exc:
-            logger.warning("Could not open %s: %s", path, exc)
+        else:
+            logger.warning("Frame not found, skipping: %s", path)
 
-    if not np_frames:
+    if not valid_paths:
         return
 
-    # YOLOE inference on numpy arrays — no second disk read
     results = yoloe_model.predict(
-        np_frames,
+        valid_paths,
         conf=yoloe_conf,
         verbose=False,
         device=device,
@@ -387,8 +381,15 @@ def _process_batch(
     crops:       list[torch.Tensor] = []
     cat_indices: list[int]       = []   # index into text_embeds for each crop
 
-    for img, frame_path, result in zip(images, valid_paths, results):
+    for frame_path, result in zip(valid_paths, results):
         if result.boxes is None or not len(result.boxes):
+            continue
+
+        # Open with PIL (RGB) for CLIP crop extraction only
+        try:
+            img = Image.open(frame_path).convert("RGB")
+        except Exception as exc:
+            logger.warning("Could not open %s for CLIP cropping: %s", frame_path, exc)
             continue
 
         w, h = img.size
@@ -420,11 +421,11 @@ def _process_batch(
 
     crops_stacked = torch.stack(crops).to(device)
 
-    # Image encoding — cast to float32 for stable dot product (matches text_embeds precision)
+    # Image encoding — cast to float32 to match text_embeds precision
     autocast_ctx = torch.amp.autocast("cuda") if device == "cuda" else torch.no_grad()
     with torch.no_grad(), autocast_ctx:
         img_feats = clip_model.encode_image(crops_stacked)
-        img_feats = img_feats.float()   # cast to float32; text_embeds are float32
+        img_feats = img_feats.float()   # float32 for consistent dot product
         img_feats /= img_feats.norm(dim=-1, keepdim=True)
 
     # Cosine similarity: dot product against the relevant text embedding per crop
