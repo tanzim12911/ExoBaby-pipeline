@@ -99,18 +99,25 @@ def precompute_text_embeddings(
     These never change between batches, so computing them once at startup
     eliminates redundant text encoding on every detection.
 
+    IMPORTANT: Text embeddings are encoded under the same autocast context as
+    image features (float16 on CUDA). This ensures both are in identical
+    precision before the dot-product similarity, matching the original
+    notebook's behaviour where text and image were encoded in the same block.
+
     Returns
     -------
     torch.Tensor of shape (n_categories, embed_dim), L2-normalised,
-    on *device*. Index i corresponds to included_categories[i].
+    in float32 on *device*. Index i corresponds to included_categories[i].
     """
     logger.info("Pre-computing CLIP text embeddings for %d categories ...", len(included_categories))
     tokens = clip_tokenizer(included_categories).to(device)
-    with torch.no_grad():
+    autocast_ctx = torch.amp.autocast("cuda") if device == "cuda" else torch.no_grad()
+    with torch.no_grad(), autocast_ctx:
         text_feats = clip_model.encode_text(tokens)
+        text_feats = text_feats.float()   # cast to float32 for stable dot product
         text_feats /= text_feats.norm(dim=-1, keepdim=True)
     logger.info("Text embeddings ready — shape: %s", list(text_feats.shape))
-    return text_feats  # (n_categories, D)
+    return text_feats  # (n_categories, D) float32
 
 
 # ---------------------------------------------------------------------------
@@ -413,15 +420,16 @@ def _process_batch(
 
     crops_stacked = torch.stack(crops).to(device)
 
-    # Image encoding only — text embeddings are pre-computed
+    # Image encoding — cast to float32 for stable dot product (matches text_embeds precision)
     autocast_ctx = torch.amp.autocast("cuda") if device == "cuda" else torch.no_grad()
     with torch.no_grad(), autocast_ctx:
         img_feats = clip_model.encode_image(crops_stacked)
+        img_feats = img_feats.float()   # cast to float32; text_embeds are float32
         img_feats /= img_feats.norm(dim=-1, keepdim=True)
 
     # Cosine similarity: dot product against the relevant text embedding per crop
-    # text_embeds[cat_indices] gathers exactly the label embedding for each detection
-    relevant_text = text_embeds[cat_indices]          # (n_dets, D)
+    # Both img_feats and text_embeds are float32 — consistent precision.
+    relevant_text = text_embeds[cat_indices]          # (n_dets, D) float32
     sims = (img_feats * relevant_text).sum(dim=-1).cpu().numpy()
 
     for record, sim in zip(det_records, sims):
