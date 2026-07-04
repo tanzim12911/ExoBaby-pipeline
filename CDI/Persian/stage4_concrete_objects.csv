@@ -1,0 +1,330 @@
+﻿item_id,language,form,form_type,item_kind,category,item_definition,english_gloss,uni_lemma,lexical_category,complexity_category,sense,alternative_forms,multiword,AoA,english_label,keep,confidence,reason
+item_100,Persian,WS,WS,word,food_drink,نمک,salt,,nouns,,,,no,22.0,salt,True,0.95,Concrete physical object
+item_101,Persian,WS,WS,word,food_drink,هلو,peach,peach,nouns,,,,no,25.0,peach,True,0.95,Concrete physical object
+item_102,Persian,WS,WS,word,food_drink,همبرگر,hamburgers,,nouns,,,,no,30.0,hamburgers,True,0.95,Concrete physical object
+item_103,Persian,WS,WS,word,food_drink,هندوانه,watermelon,watermelon,nouns,,,,no,16.0,watermelon,True,0.95,Concrete physical object
+item_104,Persian,WS,WS,word,food_drink,یخ,ice,,nouns,,,,no,11.0,ice,True,0.95,Concrete physical object
+item_105,Persian,WS,WS,word,toys,اسباب بازی,toy,toy,nouns,,,,yes,20.0,toy,True,0.95,Concrete physical object
+item_106,Persian,WS,WS,word,toys,بادبادک,kite,,nouns,,,,no,27.0,kite,True,0.95,Concrete physical object
+item_107,Persian,WS,WS,word,toys,بادکنک,balloons,balloon,nouns,,,,no,24.0,balloon,True,0.95,Concrete physical object
+item_108,Persian,WS,WS,word,toys,پازل,puzzle,,nouns,,,,no,39.0,puzzle,True,0.95,Concrete physical object
+item_109,Persian,WS,WS,word,toys,تاب,tab,,nouns,,,,no,5.0,tab,True,0.95,Concrete physical object
+item_110,Persian,WS,WS,word,toys,تخته,board,,nouns,,,,no,29.0,board,True,0.95,Concrete physical object
+item_111,Persian,WS,WS,word,toys,توپ,ball,ball,nouns,,,,no,16.0,ball,True,0.95,Concrete physical object
+item_112,Persian,WS,WS,word,toys,چسب,adhesive,,nouns,,,,no,24.0,adhesive,True,0.95,Concrete physical object
+item_113,Persian,WS,WS,word,toys,خط کش,ruler,,nouns,,,,yes,31.0,ruler,True,0.95,Concrete physical object
+item_114,Persian,WS,WS,word,toys,خمیر,play dough,,nouns,,,,no,30.0,play dough,True,0.95,Concrete physical object
+item_115,Persian,WS,WS,word,toys,خودکار,,,nouns,,,,no,24.0,pen,True,0.95,Concrete physical object
+item_116,Persian,WS,WS,word,toys,دفتر,note book,,nouns,,,,no,22.0,note book,True,0.95,Concrete physical object
+item_117,Persian,WS,WS,word,toys,سوت,whistle,,nouns,,,,no,27.0,whistle,True,0.95,Concrete physical object
+item_118,Persian,WS,WS,word,toys,عروسک,dolls,doll,nouns,,,,no,21.0,doll,True,0.95,Concrete physical object
+item_119,Persian,WS,WS,word,toys,شیپور,trumpet,,nouns,,,,no,35.0,trumpet,True,0.95,Concrete physical object
+item_120,Persian,WS,WS,word,toys,طناب,rope,rope,nouns,,,,no,30.0,rope,True,0.95,Concrete physical object
+item_121,Persian,WS,WS,word,toys,کتاب,book,book,nouns,,,,no,22.0,book,True,0.95,Concrete physical object
+item_122,Persian,WS,WS,word,toys,کتاب داستان,story book,,nouns,,,,yes,30.0,story book,True,0.95,Concrete physical object
+item_123,Persian,WS,WS,word,toys,لگو,lego,blocks,nouns,,,,no,47.0,blocks,True,0.95,Concrete physical object
+item_124,Persian,WS,WS,word,toys,ماژیک,marker,,nouns,,,,no,28.0,marker,True,0.95,Concrete physical object
+item_126,Persian,WS,WS,word,toys,مداد رنگی,crayons,,nouns,,,,yes,26.0,crayons,True,0.95,Concrete physical object
+item_129,Persian,WS,WS,word,animals,اهو,gazelle,,nouns,,,,no,32.0,gazelle,True,0.95,Concrete physical object
+item_130,Persian,WS,WS,word,animals,اسب,horse,horse,nouns,,,,no,18.0,horse,True,0.95,Concrete physical object
+item_131,Persian,WS,WS,word,animals,اردک,duck,duck,nouns,,,,no,28.0,duck,True,0.95,Concrete physical object
+item_132,Persian,WS,WS,word,animals,الاغ,ass,donkey,nouns,,,,no,27.0,donkey,True,0.95,Concrete physical object
+item_133,Persian,WS,WS,word,animals,ببر,tiger,tiger,nouns,,,,no,29.0,tiger,True,0.95,Concrete physical object
+item_134,Persian,WS,WS,word,animals,بره,lamb,lamb,nouns,,,,no,24.0,lamb,True,0.95,Concrete physical object
+item_135,Persian,WS,WS,word,animals,بز,goat,goat,nouns,,,,no,27.0,goat,True,0.95,Concrete physical object
+item_136,Persian,WS,WS,word,animals,بلبل,,,nouns,,,,no,43.0,nightingale,True,0.95,Concrete physical object
+item_137,Persian,WS,WS,word,animals,پرنده,bird,bird,nouns,,,,no,27.0,bird,True,0.95,Concrete physical object
+item_138,Persian,WS,WS,word,animals,پروانه,butterfly,butterfly,nouns,,,,no,26.0,butterfly,True,0.95,Concrete physical object
+item_139,Persian,WS,WS,word,animals,پشه,,,nouns,,,,no,25.0,mosquito,True,0.95,Concrete physical object
+item_140,Persian,WS,WS,word,animals,پلنگ,leopard,,nouns,,,,no,33.0,leopard,True,0.95,Concrete physical object
+item_141,Persian,WS,WS,word,animals,جوجه,chicken,chicken,nouns,,,,no,14.0,chicken,True,0.95,Concrete physical object
+item_144,Persian,WS,WS,word,animals,خرچنگ,crab,,nouns,,,,no,43.0,crab,True,0.95,Concrete physical object
+item_145,Persian,WS,WS,word,animals,خرس,bear,bear,nouns,,,,no,27.0,bear,True,0.95,Concrete physical object
+item_146,Persian,WS,WS,word,animals,خرگوش,rabbit,,nouns,,,,no,26.0,rabbit,True,0.95,Concrete physical object
+item_147,Persian,WS,WS,word,animals,خروس,rooster,rooster,nouns,,,,no,25.0,rooster,True,0.95,Concrete physical object
+item_148,Persian,WS,WS,word,animals,روباه,fox,fox,nouns,,,,no,,fox,True,0.95,Concrete physical object
+item_149,Persian,WS,WS,word,animals,زرافه,giraffe,giraffe,nouns,,,,no,29.0,giraffe,True,0.95,Concrete physical object
+item_150,Persian,WS,WS,word,animals,زنبور,bee,bee,nouns,,,,no,26.0,bee,True,0.95,Concrete physical object
+item_151,Persian,WS,WS,word,animals,سگ,dog,dog,nouns,,,,no,20.0,dog,True,0.95,Concrete physical object
+item_152,Persian,WS,WS,word,animals,سنجاب,squirrel,squirrel,nouns,,,,no,36.0,squirrel,True,0.95,Concrete physical object
+item_153,Persian,WS,WS,word,animals,سوسک,beetle,,nouns,,,,no,25.0,beetle,True,0.95,Concrete physical object
+item_154,Persian,WS,WS,word,animals,شتر,camel,,nouns,,,,no,27.0,camel,True,0.95,Concrete physical object
+item_155,Persian,WS,WS,word,animals,طوطی,parrot,parrot,nouns,,,,no,,parrot,True,0.95,Concrete physical object
+item_156,Persian,WS,WS,word,animals,عقاب,eagle,,nouns,,,,no,45.0,eagle,True,0.95,Concrete physical object
+item_157,Persian,WS,WS,word,animals,فیل,elephant,elephant,nouns,,,,no,26.0,elephant,True,0.95,Concrete physical object
+item_158,Persian,WS,WS,word,animals,قورباغه,frog,frog,nouns,,,,no,27.0,frog,True,0.95,Concrete physical object
+item_159,Persian,WS,WS,word,animals,کبوتر,pigeons,,nouns,,,,no,26.0,pigeons,True,0.95,Concrete physical object
+item_16,Persian,WS,WS,word,vehicles,اتوبوس,bus,bus,nouns,,,,no,26.0,bus,True,0.95,Concrete physical object
+item_160,Persian,WS,WS,word,animals,کلاغ,crow,crow,nouns,,,,no,22.0,crow,True,0.95,Concrete physical object
+item_161,Persian,WS,WS,word,animals,گاو,cow,cow,nouns,,,,no,21.0,cow,True,0.95,Concrete physical object
+item_162,Persian,WS,WS,word,animals,گربه,cat,cat,nouns,,,,no,21.0,cat,True,0.95,Concrete physical object
+item_163,Persian,WS,WS,word,animals,گرگ,wolf,wolf,nouns,,,,no,28.0,wolf,True,0.95,Concrete physical object
+item_164,Persian,WS,WS,word,animals,گنجشک,sparrow,sparrow,nouns,,,,no,26.0,sparrow,True,0.95,Concrete physical object
+item_165,Persian,WS,WS,word,animals,گورخر,zebra,zebra,nouns,,,,no,50.0,zebra,True,0.95,Concrete physical object
+item_166,Persian,WS,WS,word,animals,گوسفند,sheep,sheep,nouns,,,,no,24.0,sheep,True,0.95,Concrete physical object
+item_167,Persian,WS,WS,word,animals,گوزن,deer,deer,nouns,,,,no,33.0,deer,True,0.95,Concrete physical object
+item_168,Persian,WS,WS,word,animals,لاک پشت,turtle,turtle,nouns,,,,yes,32.0,turtle,True,0.95,Concrete physical object
+item_169,Persian,WS,WS,word,animals,مار,snake,snake,nouns,,,,no,27.0,snake,True,0.95,Concrete physical object
+item_17,Persian,WS,WS,word,vehicles,تراکتور,tractor,tractor,nouns,,,,no,,tractor,True,0.95,Concrete physical object
+item_170,Persian,WS,WS,word,animals,ماهی,fish,fish,nouns,,,,no,17.0,fish,True,0.95,Concrete physical object
+item_172,Persian,WS,WS,word,animals,مگس,,,nouns,,,,no,23.0,fly,True,0.95,Concrete physical object
+item_173,Persian,WS,WS,word,animals,مورچه,ant,ant,nouns,,,,no,19.0,ant,True,0.95,Concrete physical object
+item_174,Persian,WS,WS,word,animals,موش,mouse,mouse,nouns,,,,no,27.0,mouse,True,0.95,Concrete physical object
+item_175,Persian,WS,WS,word,animals,میمون,monkey,monkey,nouns,,,,no,27.0,monkey,True,0.95,Concrete physical object
+item_18,Persian,WS,WS,word,vehicles,دوچرخه,bicycle,bicycle,nouns,,چرخ,,no,22.0,bicycle,True,0.95,Concrete physical object
+item_19,Persian,WS,WS,word,vehicles,سهچرخه,tricycle,,nouns,,,,no,,tricycle,True,0.95,Concrete physical object
+item_20,Persian,WS,WS,word,vehicles,قایق,the boat,,nouns,,,,no,34.0,the boat,True,0.95,Concrete physical object
+item_203,Persian,WS,WS,word,outside,اداره,office,workplace,nouns,,,,no,48.0,workplace,True,0.95,Concrete physical object
+item_205,Persian,WS,WS,word,outside,بیرون,outside,outside,nouns,,,,no,23.0,outside,True,0.95,Concrete physical object
+item_206,Persian,WS,WS,word,outside,پارک,park,park,nouns,,,,no,20.0,park,True,0.95,Concrete physical object
+item_207,Persian,WS,WS,word,outside,پل,bridge,bridge,nouns,,,,no,29.0,bridge,True,0.95,Concrete physical object
+item_209,Persian,WS,WS,word,outside,خانه,home,home,nouns,,,,no,22.0,home,True,0.95,Concrete physical object
+item_21,Persian,WS,WS,word,vehicles,قطار,train,train,nouns,,,,no,27.0,train,True,0.95,Concrete physical object
+item_210,Persian,WS,WS,word,outside,دریا,sea,sea,nouns,,,,no,28.0,sea,True,0.95,Concrete physical object
+item_211,Persian,WS,WS,word,outside,ساحل,coast,,nouns,,,,no,52.0,coast,True,0.95,Concrete physical object
+item_212,Persian,WS,WS,word,outside,سینما,cinema,,nouns,,,,no,,cinema,True,0.95,Concrete physical object
+item_213,Persian,WS,WS,word,outside,کلاس,class,,nouns,,,,no,33.0,class,True,0.95,Concrete physical object
+item_214,Persian,WS,WS,word,outside,کوچه,alley,,nouns,,,,no,23.0,alley,True,0.95,Concrete physical object
+item_215,Persian,WS,WS,word,outside,کوه,mountain,mountain,nouns,,,,no,29.0,mountain,True,0.95,Concrete physical object
+item_216,Persian,WS,WS,word,outside,مدرسه,school,school,nouns,,,,no,25.0,school,True,0.95,Concrete physical object
+item_217,Persian,WS,WS,word,outside,مسجد,mosque,church,nouns,,,,no,27.0,church,True,0.95,Concrete physical object
+item_218,Persian,WS,WS,word,outside,مغازه,shop,store,nouns,,,,no,26.0,store,True,0.95,Concrete physical object
+item_219,Persian,WS,WS,word,outside,مهمانی,party,party,nouns,,,,no,27.0,party,True,0.95,Concrete physical object
+item_22,Persian,WS,WS,word,vehicles,کامیون,truck,truck,nouns,,,,no,34.0,truck,True,0.95,Concrete physical object
+item_220,Persian,WS,WS,word,clothing,النگو,bangle,,nouns,,,,no,,bangle,True,0.95,Concrete physical object
+item_221,Persian,WS,WS,word,clothing,انگشتر,ring,,nouns,,,,no,25.0,ring,True,0.95,Concrete physical object
+item_222,Persian,WS,WS,word,clothing,بلوز,blouse,,nouns,,,,no,23.0,blouse,True,0.95,Concrete physical object
+item_223,Persian,WS,WS,word,clothing,پوشک,diapers,,nouns,,,,no,24.0,diapers,True,0.95,Concrete physical object
+item_224,Persian,WS,WS,word,clothing,پیراهن,shirt,shirt,nouns,,,,no,26.0,shirt,True,0.95,Concrete physical object
+item_225,Persian,WS,WS,word,clothing,تِل,,,nouns,,,,no,26.0,hair clip,True,0.95,Concrete physical object
+item_226,Persian,WS,WS,word,clothing,پیش بند,apron,,nouns,,,,yes,29.0,apron,True,0.95,Concrete physical object
+item_227,Persian,WS,WS,word,clothing,جوراب,socks,sock,nouns,,,,no,21.0,sock,True,0.95,Concrete physical object
+item_228,Persian,WS,WS,word,clothing,چادر,,,nouns,,,,no,22.0,chador,True,0.95,Concrete physical object
+item_229,Persian,WS,WS,word,clothing,چکمه,boot,boots,nouns,,,,no,36.0,boots,True,0.95,Concrete physical object
+item_23,Persian,WS,WS,word,vehicles,ماشین,machine,,nouns,,,,no,53.0,machine,True,0.95,Concrete physical object
+item_230,Persian,WS,WS,word,clothing,دستبند,bracelet,,nouns,,,,no,31.0,bracelet,True,0.95,Concrete physical object
+item_231,Persian,WS,WS,word,clothing,دستکش,gloves,gloves,nouns,,,,no,26.0,gloves,True,0.95,Concrete physical object
+item_232,Persian,WS,WS,word,clothing,دکمه,button,button,nouns,,,,no,26.0,button,True,0.95,Concrete physical object
+item_233,Persian,WS,WS,word,clothing,دمپای ی,slippers,slipper,nouns,,,,yes,19.0,slipper,True,0.95,Concrete physical object
+item_234,Persian,WS,WS,word,clothing,روسری,scarf,scarf,nouns,,,,no,24.0,scarf,True,0.95,Concrete physical object
+item_235,Persian,WS,WS,word,clothing,زیپ,zipper,zipper,nouns,,,,no,30.0,zipper,True,0.95,Concrete physical object
+item_236,Persian,WS,WS,word,clothing,سنجاق,pin,,nouns,,,,no,30.0,pin,True,0.95,Concrete physical object
+item_237,Persian,WS,WS,word,clothing,شال,shawl,,nouns,,,,no,26.0,shawl,True,0.95,Concrete physical object
+item_238,Persian,WS,WS,word,clothing,شلوار,pants,pants,nouns,,,,no,20.0,pants,True,0.95,Concrete physical object
+item_239,Persian,WS,WS,word,clothing,شورت,short,shorts,nouns,,,,no,21.0,shorts,True,0.95,Concrete physical object
+item_24,Persian,WS,WS,word,vehicles,موتور,engine,,nouns,,,,no,21.0,engine,True,0.95,Concrete physical object
+item_240,Persian,WS,WS,word,clothing,کاپشن,jacket,jacket,nouns,,,,no,26.0,jacket,True,0.95,Concrete physical object
+item_241,Persian,WS,WS,word,clothing,کت,coat,coat,nouns,,,,no,28.0,coat,True,0.95,Concrete physical object
+item_242,Persian,WS,WS,word,clothing,کِش,,,nouns,,,,no,27.0,hair band,True,0.95,Concrete physical object
+item_243,Persian,WS,WS,word,clothing,ک فش,shoe,shoe,nouns,,,,yes,18.0,shoe,True,0.95,Concrete physical object
+item_244,Persian,WS,WS,word,clothing,کلاه,hat,hat,nouns,,,,no,20.0,hat,True,0.95,Concrete physical object
+item_245,Persian,WS,WS,word,clothing,کمربند,belt,,nouns,,,,no,27.0,belt,True,0.95,Concrete physical object
+item_246,Persian,WS,WS,word,clothing,گردنبند,necklaces,necklace,nouns,,,,no,36.0,necklace,True,0.95,Concrete physical object
+item_247,Persian,WS,WS,word,clothing,گل سر,,,nouns,,گیر,,yes,27.0,hair pin,True,0.95,Concrete physical object
+item_248,Persian,WS,WS,word,clothing,گوشواره,earrings,earrings,nouns,,,,no,27.0,earrings,True,0.95,Concrete physical object
+item_249,Persian,WS,WS,word,clothing,لباس,dress,dress,nouns,,,,no,23.0,dress,True,0.95,Concrete physical object
+item_25,Persian,WS,WS,word,vehicles,مینی بوس,minibus,,nouns,,,,yes,19.0,minibus,True,0.95,Concrete physical object
+item_250,Persian,WS,WS,word,clothing,مانتو,,,nouns,,,,no,27.0,overcoat,True,0.95,Concrete physical object
+item_251,Persian,WS,WS,word,body_parts,ابرو,,,nouns,,,,no,20.0,eyebrow,True,0.95,Concrete physical object
+item_252,Persian,WS,WS,word,body_parts,انگشت,finger,finger,nouns,,,,no,22.0,finger,True,0.95,Concrete physical object
+item_253,Persian,WS,WS,word,body_parts,بازو,arm,arm,nouns,,,,no,36.0,arm,True,0.95,Concrete physical object
+item_254,Persian,WS,WS,word,body_parts,باسن,,,nouns,,,,no,29.0,butt,True,0.95,Concrete physical object
+item_255,Persian,WS,WS,word,body_parts,بینی,nose,nose,nouns,,دماغ,,no,19.0,nose,True,0.95,Concrete physical object
+item_256,Persian,WS,WS,word,body_parts,پا,leg,leg,nouns,,,,no,,leg,True,0.95,Concrete physical object
+item_257,Persian,WS,WS,word,body_parts,چانه,chin,chin,nouns,,,,no,28.0,chin,True,0.95,Concrete physical object
+item_258,Persian,WS,WS,word,body_parts,چشم,eye,eye,nouns,,,,no,17.0,eye,True,0.95,Concrete physical object
+item_259,Persian,WS,WS,word,body_parts,دست,hand,hand,nouns,,,,no,16.0,hand,True,0.95,Concrete physical object
+item_26,Persian,WS,WS,word,vehicles,هلی کوپتر,helicopter,helicopter,nouns,,,,yes,55.0,helicopter,True,0.95,Concrete physical object
+item_261,Persian,WS,WS,word,body_parts,دندان,tooth,tooth,nouns,,,,no,20.0,tooth,True,0.95,Concrete physical object
+item_262,Persian,WS,WS,word,body_parts,دهان,mouth,mouth,nouns,,,,no,20.0,mouth,True,0.95,Concrete physical object
+item_263,Persian,WS,WS,word,body_parts,زانو,knee,knee,nouns,,,,no,30.0,knee,True,0.95,Concrete physical object
+item_264,Persian,WS,WS,word,body_parts,زبان,tongue,tongue,nouns,,,,no,21.0,tongue,True,0.95,Concrete physical object
+item_265,Persian,WS,WS,word,body_parts,سر,head,head,nouns,,کله,,no,20.0,head,True,0.95,Concrete physical object
+item_266,Persian,WS,WS,word,body_parts,شانه,shoulder,,nouns,,,,no,30.0,shoulder,True,0.95,Concrete physical object
+item_267,Persian,WS,WS,word,body_parts,شکم,,,nouns,,,,no,21.0,tummy,True,0.95,Concrete physical object
+item_268,Persian,WS,WS,word,body_parts,شصت,,,nouns,,,,no,29.0,thumb,True,0.95,Concrete physical object
+item_269,Persian,WS,WS,word,body_parts,صورت,face,face,nouns,,,,no,23.0,face,True,0.95,Concrete physical object
+item_27,Persian,WS,WS,word,vehicles,هواپیما,plane,,nouns,,,,no,0.0,plane,True,0.95,Concrete physical object
+item_270,Persian,WS,WS,word,body_parts,گردن,neck,neck,nouns,,,,no,25.0,neck,True,0.95,Concrete physical object
+item_271,Persian,WS,WS,word,body_parts,وش,,,nouns,,,,no,19.0,ear,True,0.95,Concrete physical object
+item_272,Persian,WS,WS,word,body_parts,لب ها,lips,lips,nouns,,,,yes,21.0,lips,True,0.95,Concrete physical object
+item_273,Persian,WS,WS,word,body_parts,لپ,cheek,cheek,nouns,,,,no,19.0,cheek,True,0.95,Concrete physical object
+item_274,Persian,WS,WS,word,body_parts,مو,hair,hair,nouns,,,,no,12.0,hair,True,0.95,Concrete physical object
+item_275,Persian,WS,WS,word,body_parts,مچ,wrist,,nouns,,,,no,31.0,wrist,True,0.95,Concrete physical object
+item_276,Persian,WS,WS,word,body_parts,مشت,fist,,nouns,,,,no,28.0,fist,True,0.95,Concrete physical object
+item_277,Persian,WS,WS,word,body_parts,مژه,eyelashes,,nouns,,,,no,27.0,eyelashes,True,0.95,Concrete physical object
+item_278,Persian,WS,WS,word,body_parts,ناف,,,nouns,,,,no,25.0,belly button,True,0.95,Concrete physical object
+item_28,Persian,WS,WS,word,vehicles,کشتی,ship,,nouns,,,,no,22.0,ship,True,0.95,Concrete physical object
+item_29,Persian,WS,WS,word,food_drink,اب,water,water,nouns,,,,no,,water,True,0.95,Concrete physical object
+item_30,Persian,WS,WS,word,food_drink,ابگوشت,broth,,nouns,,,,no,26.0,broth,True,0.95,Concrete physical object
+item_307,Persian,WS,WS,word,furniture_rooms,ایفون,iphone,,nouns,,,,no,32.0,iphone,True,0.95,Concrete physical object
+item_309,Persian,WS,WS,word,furniture_rooms,اتو,iron,,nouns,,,,no,22.0,iron,True,0.95,Concrete physical object
+item_31,Persian,WS,WS,word,food_drink,اب میوه) ساندیس),juice,juice,nouns,,,,yes,24.0,juice,True,0.95,Concrete physical object
+item_310,Persian,WS,WS,word,furniture_rooms,اجاق,,,nouns,,گاز,,no,22.0,stove,True,0.95,Concrete physical object
+item_312,Persian,WS,WS,word,furniture_rooms,بخاری,heater,,nouns,,,,no,21.0,heater,True,0.95,Concrete physical object
+item_313,Persian,WS,WS,word,furniture_rooms,پارکینگ,parking,,nouns,,,,no,29.0,parking,True,0.95,Concrete physical object
+item_314,Persian,WS,WS,word,furniture_rooms,پذیرایی,catering,,nouns,,,,no,38.0,catering,True,0.95,Concrete physical object
+item_315,Persian,WS,WS,word,furniture_rooms,پله,step,,nouns,,,,no,23.0,step,True,0.95,Concrete physical object
+item_316,Persian,WS,WS,word,furniture_rooms,پنجره,window,window,nouns,,,,no,26.0,window,True,0.95,Concrete physical object
+item_317,Persian,WS,WS,word,furniture_rooms,تخت,,,nouns,,,,no,23.0,bed,True,0.95,Concrete physical object
+item_318,Persian,WS,WS,word,furniture_rooms,تلویزیون,television,tv,nouns,,,,no,23.0,tv,True,0.95,Concrete physical object
+item_32,Persian,WS,WS,word,food_drink,اب نبات,candy,candy,nouns,,,,yes,27.0,candy,True,0.95,Concrete physical object
+item_320,Persian,WS,WS,word,furniture_rooms,در,door,door,nouns,,,,no,15.0,door,True,0.95,Concrete physical object
+item_321,Persian,WS,WS,word,furniture_rooms,دستشویی,toilet,,nouns,,,,no,22.0,toilet,True,0.95,Concrete physical object
+item_322,Persian,WS,WS,word,furniture_rooms,دوش,shower,shower,nouns,,,,no,27.0,shower,True,0.95,Concrete physical object
+item_323,Persian,WS,WS,word,furniture_rooms,دیوار,wall,wall,nouns,,,,no,24.0,wall,True,0.95,Concrete physical object
+item_325,Persian,WS,WS,word,furniture_rooms,زیرزمین,underground,,nouns,,,,no,32.0,underground,True,0.95,Concrete physical object
+item_326,Persian,WS,WS,word,furniture_rooms,سماور,,,nouns,,,,no,40.0,samovar,True,0.95,Concrete physical object
+item_327,Persian,WS,WS,word,furniture_rooms,صندلی,chair,chair,nouns,,,,no,21.0,chair,True,0.95,Concrete physical object
+item_328,Persian,WS,WS,word,furniture_rooms,ضبط,record,,nouns,,,,no,33.0,record,True,0.95,Concrete physical object
+item_329,Persian,WS,WS,word,furniture_rooms,فریزر,freezer,,nouns,,,,no,33.0,freezer,True,0.95,Concrete physical object
+item_33,Persian,WS,WS,word,food_drink,اجیل,,,nouns,,,,no,36.0,mixed nuts,True,0.95,Concrete physical object
+item_330,Persian,WS,WS,word,furniture_rooms,ظرفشویی,dishwasher,,nouns,,,,no,30.0,dishwasher,True,0.95,Concrete physical object
+item_331,Persian,WS,WS,word,furniture_rooms,قالی,carpet,carpet,nouns,, فرش,,no,23.0,carpet,True,0.95,Concrete physical object
+item_332,Persian,WS,WS,word,furniture_rooms,کامپیوتر,computer,computer,nouns,,,,no,27.0,computer,True,0.95,Concrete physical object
+item_333,Persian,WS,WS,word,furniture_rooms,کشو,drawing,,nouns,,,,no,28.0,drawing,True,0.95,Concrete physical object
+item_335,Persian,WS,WS,word,furniture_rooms,ماشین لباسشویی,washing machine,washing machine,nouns,,,,yes,27.0,washing machine,True,0.95,Concrete physical object
+item_336,Persian,WS,WS,word,furniture_rooms,مبل,sofa,couch,nouns,,,,no,23.0,couch,True,0.95,Concrete physical object
+item_337,Persian,WS,WS,word,furniture_rooms,میز,table,table,nouns,,,,no,23.0,table,True,0.95,Concrete physical object
+item_338,Persian,WS,WS,word,furniture_rooms,یخچال,refrigerator,refrigerator,nouns,,,,no,22.0,refrigerator,True,0.95,Concrete physical object
+item_339,Persian,WS,WS,word,household,اشغال,rubbish,trash,nouns,,,,no,22.0,trash,True,0.95,Concrete physical object
+item_34,Persian,WS,WS,word,food_drink,ادامس,,,nouns,,,,no,19.0,gum,True,0.95,Concrete physical object
+item_340,Persian,WS,WS,word,household,اینه,mirror,mirror,nouns,,,,no,20.0,mirror,True,0.95,Concrete physical object
+item_341,Persian,WS,WS,word,household,استکان,glass,glass,nouns,,,,no,26.0,glass,True,0.95,Concrete physical object
+item_342,Persian,WS,WS,word,household,بالش,pillow,pillow,nouns,,پشتی,,no,20.0,pillow,True,0.95,Concrete physical object
+item_343,Persian,WS,WS,word,household,برس,brush,brush,nouns,,,,no,23.0,brush,True,0.95,Concrete physical object
+item_344,Persian,WS,WS,word,household,بشقاب,plate,plate,nouns,,,,no,22.0,plate,True,0.95,Concrete physical object
+item_345,Persian,WS,WS,word,household,پارچ,pitcher,,nouns,,,,no,27.0,pitcher,True,0.95,Concrete physical object
+item_346,Persian,WS,WS,word,household,پارچه,cloth,cloth,nouns,,,,no,34.0,cloth,True,0.95,Concrete physical object
+item_347,Persian,WS,WS,word,household,پتو,,,nouns,,,,no,20.0,blanket,True,0.95,Concrete physical object
+item_348,Persian,WS,WS,word,household,پرده,curtain,curtain,nouns,,,,no,24.0,curtain,True,0.95,Concrete physical object
+item_349,Persian,WS,WS,word,household,پول,money,money,nouns,,,,no,19.0,money,True,0.95,Concrete physical object
+item_35,Persian,WS,WS,word,food_drink,اش,,,nouns,,,,no,21.0,stew,True,0.95,Concrete physical object
+item_350,Persian,WS,WS,word,household,پیچ,screw,,nouns,,,,no,27.0,screw,True,0.95,Concrete physical object
+item_351,Persian,WS,WS,word,household,پیچ گوشتی,screw driver,,nouns,,,,yes,29.0,screw driver,True,0.95,Concrete physical object
+item_352,Persian,WS,WS,word,household,تلفن,phone,telephone,nouns,,,,no,20.0,telephone,True,0.95,Concrete physical object
+item_353,Persian,WS,WS,word,household,جارو,broom,broom,nouns,,,,no,21.0,broom,True,0.95,Concrete physical object
+item_354,Persian,WS,WS,word,household,جارو برقی,vacuum cleaner,,nouns,,,,yes,22.0,vacuum cleaner,True,0.95,Concrete physical object
+item_355,Persian,WS,WS,word,household,چاقو,knife,knife,nouns,,,,no,22.0,knife,True,0.95,Concrete physical object
+item_356,Persian,WS,WS,word,household,چتر,umbrella,umbrella,nouns,,,,no,26.0,umbrella,True,0.95,Concrete physical object
+item_357,Persian,WS,WS,word,household,چکش,hammer,hammer,nouns,,,,no,29.0,hammer,True,0.95,Concrete physical object
+item_358,Persian,WS,WS,word,household,چنگال,,,nouns,,,,no,23.0,fork,True,0.95,Concrete physical object
+item_359,Persian,WS,WS,word,household,چوب,wood,,nouns,,,,no,25.0,wood,True,0.95,Concrete physical object
+item_36,Persian,WS,WS,word,food_drink,البالو,,,nouns,,,,no,26.0,sour cherry,True,0.95,Concrete physical object
+item_360,Persian,WS,WS,word,household,حوله,towel,towel,nouns,,,,no,21.0,towel,True,0.95,Concrete physical object
+item_361,Persian,WS,WS,word,household,خمیر دندان,toothpaste,,nouns,,,,yes,26.0,toothpaste,True,0.95,Concrete physical object
+item_362,Persian,WS,WS,word,household,دارو,medicine,medicine,nouns,,,,no,21.0,medicine,True,0.95,Concrete physical object
+item_363,Persian,WS,WS,word,household,دستمال,napkin,,nouns,,,,no,23.0,napkin,True,0.95,Concrete physical object
+item_364,Persian,WS,WS,word,household,دوربین,camera,camera,nouns,,,,no,28.0,camera,True,0.95,Concrete physical object
+item_365,Persian,WS,WS,word,household,دیس,dis,,nouns,,,,no,34.0,dis,True,0.95,Concrete physical object
+item_366,Persian,WS,WS,word,household,رادیو,radio,radio,nouns,,,,no,31.0,radio,True,0.95,Concrete physical object
+item_367,Persian,WS,WS,word,household,ساعت,watch,,nouns,,,,no,24.0,watch,True,0.95,Concrete physical object
+item_368,Persian,WS,WS,word,household,سطل,,,nouns,,,,no,25.0,bucket,True,0.95,Concrete physical object
+item_369,Persian,WS,WS,word,household,سوزن,needle,,nouns,,,,no,25.0,needle,True,0.95,Concrete physical object
+item_37,Persian,WS,WS,word,food_drink,انار,pomegranate,,nouns,,,,no,21.0,pomegranate,True,0.95,Concrete physical object
+item_370,Persian,WS,WS,word,household,سی دی,disk,,nouns,,,,yes,26.0,disk,True,0.95,Concrete physical object
+item_371,Persian,WS,WS,word,household,سینی,,,nouns,,,,no,25.0,tray,True,0.95,Concrete physical object
+item_372,Persian,WS,WS,word,household,شامپو,shampoo,,nouns,,,,no,23.0,shampoo,True,0.95,Concrete physical object
+item_374,Persian,WS,WS,word,household,شمع,candle,candle,nouns,,,,no,27.0,candle,True,0.95,Concrete physical object
+item_375,Persian,WS,WS,word,household,شیشه,bottle,bottle,nouns,,شیر,,no,,bottle,True,0.95,Concrete physical object
+item_376,Persian,WS,WS,word,household,صابون,soap,soap,nouns,,,,no,24.0,soap,True,0.95,Concrete physical object
+item_377,Persian,WS,WS,word,household,ظرف,container,box,nouns,,,,no,29.0,box,True,0.95,Concrete physical object
+item_378,Persian,WS,WS,word,household,عکس,picture,picture,nouns,,,,no,22.0,picture,True,0.95,Concrete physical object
+item_379,Persian,WS,WS,word,household,عینک,glasses,glasses,nouns,,,,no,24.0,glasses,True,0.95,Concrete physical object
+item_38,Persian,WS,WS,word,food_drink,انگور,,,nouns,,,,no,23.0,grapes,True,0.95,Concrete physical object
+item_380,Persian,WS,WS,word,household,قاشق,spoon,spoon,nouns,,,,no,21.0,spoon,True,0.95,Concrete physical object
+item_381,Persian,WS,WS,word,household,قوری,,,nouns,,,,no,26.0,teapot,True,0.95,Concrete physical object
+item_382,Persian,WS,WS,word,household,قیچی,scissor,scissors,nouns,,,,no,24.0,scissors,True,0.95,Concrete physical object
+item_383,Persian,WS,WS,word,household,کاسه,bowl,bowl,nouns,,,,no,24.0,bowl,True,0.95,Concrete physical object
+item_384,Persian,WS,WS,word,household,کاغذ,paper,paper,nouns,,,,no,24.0,paper,True,0.95,Concrete physical object
+item_385,Persian,WS,WS,word,household,کبریت,matches,,nouns,,,,no,24.0,matches,True,0.95,Concrete physical object
+item_386,Persian,WS,WS,word,household,کتری,,,nouns,,,,no,30.0,kettle,True,0.95,Concrete physical object
+item_387,Persian,WS,WS,word,household,کلید,key,keys,nouns,,,,no,19.0,keys,True,0.95,Concrete physical object
+item_388,Persian,WS,WS,word,household,کنترل,control,,nouns,,,,no,22.0,control,True,0.95,Concrete physical object
+item_389,Persian,WS,WS,word,household,کیف,bag,bag,nouns,,,,no,19.0,bag,True,0.95,Concrete physical object
+item_39,Persian,WS,WS,word,food_drink,بادام,almond,,nouns,,,,no,24.0,almond,True,0.95,Concrete physical object
+item_390,Persian,WS,WS,word,household,لامپ,lamp,lamp,nouns,,,,no,23.0,lamp,True,0.95,Concrete physical object
+item_391,Persian,WS,WS,word,household,لیف,,,nouns,,,,no,32.0,loofah,True,0.95,Concrete physical object
+item_393,Persian,WS,WS,word,household,مسواک,toothbrush,toothbrush,nouns,,,,no,22.0,toothbrush,True,0.95,Concrete physical object
+item_394,Persian,WS,WS,word,household,نخ,thread,,nouns,,,,no,24.0,thread,True,0.95,Concrete physical object
+item_395,Persian,WS,WS,word,household,نمکدان,salt shaker,,nouns,,,,no,23.0,salt shaker,True,0.95,Concrete physical object
+item_396,Persian,WS,WS,word,outside,اتش,fire,fire,nouns,,,,no,23.0,fire,True,0.95,Concrete physical object
+item_397,Persian,WS,WS,word,outside,ادم برفی,snowman,snowman,nouns,,,,yes,28.0,snowman,True,0.95,Concrete physical object
+item_399,Persian,WS,WS,word,outside,ابر,cloud,cloud,nouns,,,,no,24.0,cloud,True,0.95,Concrete physical object
+item_40,Persian,WS,WS,word,food_drink,برنج,rice,rice,nouns,,,,no,17.0,rice,True,0.95,Concrete physical object
+item_402,Persian,WS,WS,word,outside,بام,roof,roof,nouns,,پشت بام,,no,31.0,roof,True,0.95,Concrete physical object
+item_404,Persian,WS,WS,word,outside,برگ,leaves,leaf,nouns,,,,no,26.0,leaf,True,0.95,Concrete physical object
+item_405,Persian,WS,WS,word,outside,بیل,bill,,nouns,,,,no,32.0,bill,True,0.95,Concrete physical object
+item_406,Persian,WS,WS,word,outside,پرچم,flag,,nouns,,,,no,28.0,flag,True,0.95,Concrete physical object
+item_407,Persian,WS,WS,word,outside,پیاده رو,sidewalk,,nouns,,,,yes,33.0,sidewalk,True,0.95,Concrete physical object
+item_408,Persian,WS,WS,word,outside,حوض,pool,pool,nouns,,استخر,,no,29.0,pool,True,0.95,Concrete physical object
+item_409,Persian,WS,WS,word,outside,خاک,soil,soil,nouns,,,,no,25.0,soil,True,0.95,Concrete physical object
+item_41,Persian,WS,WS,word,food_drink,بستنی,ice cream,ice cream,nouns,,,,no,19.0,ice cream,True,0.95,Concrete physical object
+item_410,Persian,WS,WS,word,outside,خورشید,sun,sun,nouns,,,,no,25.0,sun,True,0.95,Concrete physical object
+item_411,Persian,WS,WS,word,outside,خیابان,street,street,nouns,,,,no,26.0,street,True,0.95,Concrete physical object
+item_412,Persian,WS,WS,word,outside,درخت,tree,tree,nouns,,,,no,22.0,tree,True,0.95,Concrete physical object
+item_413,Persian,WS,WS,word,outside,دود,smoke,,nouns,,,,no,29.0,smoke,True,0.95,Concrete physical object
+item_414,Persian,WS,WS,word,outside,زمین,earth,earth,nouns,,,,no,24.0,earth,True,0.95,Concrete physical object
+item_415,Persian,WS,WS,word,outside,ساقه,stem,,nouns,,,,no,60.0,stem,True,0.95,Concrete physical object
+item_416,Persian,WS,WS,word,outside,ستاره,star,star,nouns,,,,no,24.0,star,True,0.95,Concrete physical object
+item_417,Persian,WS,WS,word,outside,سرسره,slide,,nouns,,,,no,21.0,slide,True,0.95,Concrete physical object
+item_418,Persian,WS,WS,word,outside,سنگ,rock,rock,nouns,,,,no,24.0,rock,True,0.95,Concrete physical object
+item_419,Persian,WS,WS,word,outside,شلنگ,,,nouns,,,,no,27.0,hose,True,0.95,Concrete physical object
+item_42,Persian,WS,WS,word,food_drink,بلال,,,nouns,,,,no,28.0,corn,True,0.95,Concrete physical object
+item_420,Persian,WS,WS,word,outside,علف,grass,grass,nouns,,سبزه,,no,32.0,grass,True,0.95,Concrete physical object
+item_421,Persian,WS,WS,word,outside,گل,flower,flower,nouns,,,,no,19.0,flower,True,0.95,Concrete physical object
+item_423,Persian,WS,WS,word,outside,ماه,month,,nouns,,,,no,21.0,month,True,0.95,Concrete physical object
+item_424,Persian,WS,WS,word,outside,هوا,air,,nouns,,,,no,27.0,air,True,0.95,Concrete physical object
+item_43,Persian,WS,WS,word,food_drink,بیسکویت,biscuits,,nouns,,,,no,20.0,biscuits,True,0.95,Concrete physical object
+item_44,Persian,WS,WS,word,food_drink,پرتقال,orange,orange,nouns,,,,no,20.0,orange,True,0.95,Concrete physical object
+item_45,Persian,WS,WS,word,food_drink,پسته,pistachio,,nouns,,,,no,22.0,pistachio,True,0.95,Concrete physical object
+item_46,Persian,WS,WS,word,food_drink,پفک,cheetos,,nouns,,,,no,22.0,cheetos,True,0.95,Concrete physical object
+item_48,Persian,WS,WS,word,food_drink,پنیر,cheese,cheese,nouns,,,,no,20.0,cheese,True,0.95,Concrete physical object
+item_49,Persian,WS,WS,word,food_drink,پیاز,onion,,nouns,,,,no,22.0,onion,True,0.95,Concrete physical object
+item_50,Persian,WS,WS,word,food_drink,پیتزا,pizza,pizza,nouns,,,,no,29.0,pizza,True,0.95,Concrete physical object
+item_51,Persian,WS,WS,word,food_drink,تخممرغ,egg,egg,nouns,,,,no,22.0,egg,True,0.95,Concrete physical object
+item_52,Persian,WS,WS,word,food_drink,تن ماهی,tuna,,nouns,,,,yes,32.0,tuna,True,0.95,Concrete physical object
+item_53,Persian,WS,WS,word,food_drink,توت,,,nouns,,,,no,21.0,mulberry,True,0.95,Concrete physical object
+item_54,Persian,WS,WS,word,food_drink,چای,tea,tea,nouns,,,,no,19.0,tea,True,0.95,Concrete physical object
+item_55,Persian,WS,WS,word,food_drink,چوب شور,pretzel,pretzel,nouns,,,,yes,31.0,pretzel,True,0.95,Concrete physical object
+item_56,Persian,WS,WS,word,food_drink,چیپس,chips,chips,nouns,,,,no,21.0,chips,True,0.95,Concrete physical object
+item_57,Persian,WS,WS,word,food_drink,خربزه,melon,,nouns,,,,no,29.0,melon,True,0.95,Concrete physical object
+item_59,Persian,WS,WS,word,food_drink,خیار,cucumber,cucumber,nouns,,,,no,21.0,cucumber,True,0.95,Concrete physical object
+item_60,Persian,WS,WS,word,food_drink,رب,,,nouns,,,,no,25.0,tomato paste,True,0.95,Concrete physical object
+item_61,Persian,WS,WS,word,food_drink,دوغ,dough,,nouns,,,,no,16.0,dough,True,0.95,Concrete physical object
+item_62,Persian,WS,WS,word,food_drink,ساندویچ,sandwich,sandwich,nouns,,,,no,29.0,sandwich,True,0.95,Concrete physical object
+item_63,Persian,WS,WS,word,food_drink,سبزی,vegetables,,nouns,,,,no,23.0,vegetables,True,0.95,Concrete physical object
+item_64,Persian,WS,WS,word,food_drink,سس,,,nouns,,,,no,23.0,sauce,True,0.95,Concrete physical object
+item_65,Persian,WS,WS,word,food_drink,سوپ,soup,soup,nouns,,,,no,23.0,soup,True,0.95,Concrete physical object
+item_66,Persian,WS,WS,word,food_drink,سوسیس,sausage,,nouns,,,,no,47.0,sausage,True,0.95,Concrete physical object
+item_67,Persian,WS,WS,word,food_drink,سیب,apple,apple,nouns,,,,no,15.0,apple,True,0.95,Concrete physical object
+item_68,Persian,WS,WS,word,food_drink,سیب زمینی,potato,potato,nouns,,,,yes,24.0,potato,True,0.95,Concrete physical object
+item_69,Persian,WS,WS,word,food_drink,شربت,syrup,,nouns,,,,no,24.0,syrup,True,0.95,Concrete physical object
+item_70,Persian,WS,WS,word,food_drink,شکلات,chocolate,chocolate,nouns,,,,no,22.0,chocolate,True,0.95,Concrete physical object
+item_71,Persian,WS,WS,word,food_drink,شیر,milk,milk,nouns,,خوراکی,,no,18.0,milk,True,0.95,Concrete physical object
+item_72,Persian,WS,WS,word,food_drink,شیرینی,sweets,,nouns,,,,no,24.0,sweets,True,0.95,Concrete physical object
+item_74,Persian,WS,WS,word,food_drink,فلفل,pepper,pepper,nouns,,,,no,28.0,pepper,True,0.95,Concrete physical object
+item_75,Persian,WS,WS,word,food_drink,فندق,hazelnut,,nouns,,,,no,31.0,hazelnut,True,0.95,Concrete physical object
+item_76,Persian,WS,WS,word,food_drink,قارچ,mushrooms,mushroom,nouns,,,,no,29.0,mushroom,True,0.95,Concrete physical object
+item_77,Persian,WS,WS,word,food_drink,قند,sugar loaf,,nouns,,,,no,20.0,sugar loaf,True,0.95,Concrete physical object
+item_78,Persian,WS,WS,word,food_drink,کاکائو,cocoa,,nouns,,,,no,25.0,cocoa,True,0.95,Concrete physical object
+item_79,Persian,WS,WS,word,food_drink,کالباس,bologna,,nouns,,,,no,33.0,bologna,True,0.95,Concrete physical object
+item_80,Persian,WS,WS,word,food_drink,کره,butter,butter,nouns,,,,no,22.0,butter,True,0.95,Concrete physical object
+item_81,Persian,WS,WS,word,food_drink,کباب,barbecue,,nouns,,,,no,24.0,barbecue,True,0.95,Concrete physical object
+item_82,Persian,WS,WS,word,food_drink,کشمش,raisins,,nouns,,,,no,27.0,raisins,True,0.95,Concrete physical object
+item_83,Persian,WS,WS,word,food_drink,کیک,cake,cake,nouns,,,,no,20.0,cake,True,0.95,Concrete physical object
+item_84,Persian,WS,WS,word,food_drink,کیوی,kiwi,,nouns,,,,no,23.0,kiwi,True,0.95,Concrete physical object
+item_85,Persian,WS,WS,word,food_drink,گردو,walnut,,nouns,,,,no,23.0,walnut,True,0.95,Concrete physical object
+item_86,Persian,WS,WS,word,food_drink,گوشت,meat,meat,nouns,,,,no,22.0,meat,True,0.95,Concrete physical object
+item_87,Persian,WS,WS,word,food_drink,گوجه,tomato,tomato,nouns,,,,no,20.0,tomato,True,0.95,Concrete physical object
+item_88,Persian,WS,WS,word,food_drink,گیلاس,cherries,,nouns,,,,no,29.0,cherries,True,0.95,Concrete physical object
+item_89,Persian,WS,WS,word,food_drink,لوبیا,beans,beans,nouns,,,,no,27.0,beans,True,0.95,Concrete physical object
+item_90,Persian,WS,WS,word,food_drink,لیمو,lemon,lemon,nouns,,,,no,27.0,lemon,True,0.95,Concrete physical object
+item_91,Persian,WS,WS,word,food_drink,ماست,yogurt,yogurt,nouns,,,,no,,yogurt,True,0.95,Concrete physical object
+item_92,Persian,WS,WS,word,food_drink,ماکارونی,macaroni,pasta,nouns,,,,no,24.0,pasta,True,0.95,Concrete physical object
+item_93,Persian,WS,WS,word,food_drink,مربا,jam,jam,nouns,,,,no,26.0,jam,True,0.95,Concrete physical object
+item_94,Persian,WS,WS,word,food_drink,موز,banana,banana,nouns,,,,no,15.0,banana,True,0.95,Concrete physical object
+item_95,Persian,WS,WS,word,food_drink,میوه,fruit,fruit,nouns,,,,no,23.0,fruit,True,0.95,Concrete physical object
+item_96,Persian,WS,WS,word,food_drink,نان,bread,bread,nouns,,,,no,0.0,bread,True,0.95,Concrete physical object
+item_98,Persian,WS,WS,word,food_drink,نوشابه,soda,soda,nouns,,,,no,22.0,soda,True,0.95,Concrete physical object
+item_99,Persian,WS,WS,word,food_drink,نخودچی,chickpeas,,nouns,,,,no,28.0,chickpeas,True,0.95,Concrete physical object
