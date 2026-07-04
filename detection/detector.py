@@ -205,7 +205,7 @@ def load_already_done(output_csv: str) -> set[str]:
     df = pd.read_csv(output_csv)
     if "frame_path" not in df.columns:
         return set()
-    return set(df["frame_path"].unique())
+    return set(df["frame_path"].dropna().unique())
 
 
 # ---------------------------------------------------------------------------
@@ -383,6 +383,14 @@ def _process_batch(
 
     for frame_path, result in zip(valid_paths, results):
         if result.boxes is None or not len(result.boxes):
+            # Write a sentinel row so this frame is recognised as "already done"
+            # on resume. class_name="" signals no detection — excluded from analysis.
+            writer.writerow({
+                "frame_path":      frame_path,
+                "class_name":      "",
+                "confidence":      "",
+                "clip_similarity": "",
+            })
             continue
 
         # Open with PIL (RGB) for CLIP crop extraction only
