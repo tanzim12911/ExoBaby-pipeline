@@ -193,8 +193,12 @@ def run_download():
 def run_segment(videos: list[str]) -> list[tuple[str, str]]:
     """
     Returns a list of (video_id, clip_path) tuples for all clips.
+    All clips are segmented and passed to the VLM filter — the bias cap is
+    applied later at export time, not here.
     """
-    logger.info("=== STEP 2: Segmenting videos into 30s clips ===")
+    logger.info(
+        f"=== STEP 2: Segmenting videos into {config.CLIP_DURATION_SECONDS}s clips ==="
+    )
     all_clips = []
     for video_path in videos:
         video_id = Path(video_path).stem
@@ -312,15 +316,59 @@ def run_filter(all_clips: list[tuple[str, str]]) -> tuple[list[str], int]:
 # -----------------------------------------------------------------------------
 def run_export(passed_clips: list[str]) -> int:
     """
-    Export approved clips at 1 FPS.
+    Export approved clips at 1 FPS, respecting config.MAX_PASSED_CLIPS_PER_VIDEO.
+
+    The cap is applied here — after filtering — so the VLM has seen every clip
+    and we only limit how many *passed* clips from each video enter the final
+    dataset.  This avoids the problem of blindly discarding the first N clips
+    at segmentation time, which could throw away all the baby-containing content
+    if it happens to be in the second half of a long video.
+
+    Example:
+        Video A has 40 clips, last 20 pass the VLM filter.
+        cap=20 → all 20 passed clips are exported  (no loss).
+
+        Video B has 96 clips, 50 pass the VLM filter.
+        cap=20 → the first 20 passed clips (in clip-number order) are exported,
+                  30 are skipped.  This is still fair because the VLM already
+                  verified all 50 clips contain relevant content.
+
     Returns the total number of exported frames.
     """
-    logger.info("=== STEP 7: Exporting approved clips at 1 FPS ===")
-    total_exported_frames = 0
+    max_passed = getattr(config, "MAX_PASSED_CLIPS_PER_VIDEO", None)
+    logger.info(
+        f"=== STEP 7: Exporting approved clips at 1 FPS "
+        f"(max_passed_clips_per_video={max_passed}) ==="
+    )
+
+    # Group passed clips by video_id, preserving clip-number order
+    # so the cap always takes the earliest-in-video clips first.
+    from collections import defaultdict
+    clips_by_video: dict[str, list[str]] = defaultdict(list)
     for clip_path in passed_clips:
-        # Reconstruct output path from clip path
-        # data/clips/<video_id>/<clip_name>.mp4
-        #   -> data/filtered/<video_id>/<clip_name>/
+        parts = Path(clip_path).parts
+        try:
+            clips_idx = parts.index("clips")
+            video_id  = parts[clips_idx + 1]
+        except (ValueError, IndexError):
+            video_id = "unknown"
+        clips_by_video[video_id].append(clip_path)
+
+    # Sort each video's clips by clip name (0000, 0001, …) and apply cap
+    capped_clips: list[str] = []
+    for video_id, clips in clips_by_video.items():
+        sorted_clips = sorted(clips, key=lambda p: Path(p).stem)
+        if max_passed is not None and len(sorted_clips) > max_passed:
+            logger.info(
+                f"max_passed_clips={max_passed}: video {video_id} has "
+                f"{len(sorted_clips)} passed clips — exporting first {max_passed}, "
+                f"skipping {len(sorted_clips) - max_passed}"
+            )
+            sorted_clips = sorted_clips[:max_passed]
+        capped_clips.extend(sorted_clips)
+
+    total_exported_frames = 0
+    for clip_path in capped_clips:
         parts = Path(clip_path).parts
         try:
             clips_idx = parts.index("clips")
@@ -343,7 +391,11 @@ def run_export(passed_clips: list[str]) -> int:
         frames = export_at_1fps(clip_path, output_dir)
         total_exported_frames += len(frames)
 
-    logger.info(f"Export complete. Total exported frames: {total_exported_frames}")
+    logger.info(
+        f"Export complete. "
+        f"Clips exported: {len(capped_clips)} / {len(passed_clips)} passed. "
+        f"Total frames: {total_exported_frames}"
+    )
     return total_exported_frames
 
 
@@ -411,10 +463,10 @@ def main():
     if step in ("segment", "all"):
         all_clips = run_segment(videos)
     else:
-        # Reconstruct clip list from disk
+        # Reconstruct clip list from disk (no cap here — cap is at export)
         all_clips = []
         if os.path.isdir(config.CLIPS_DIR):
-            for vid_id in os.listdir(config.CLIPS_DIR):
+            for vid_id in sorted(os.listdir(config.CLIPS_DIR)):
                 clip_dir = os.path.join(config.CLIPS_DIR, vid_id)
                 if os.path.isdir(clip_dir):
                     for f in sorted(os.listdir(clip_dir)):

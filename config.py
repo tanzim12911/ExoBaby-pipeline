@@ -45,6 +45,28 @@ VIDEO_MERGE_FORMAT = "mp4"
 # --- Segmentation ---
 CLIP_DURATION_SECONDS = 30
 
+# --- Bias Mitigation: max *passed* clips exported per video ---
+# After VLM filtering, this limits how many approved clips from any single
+# video are actually exported to the final 1-FPS frame dataset.
+#
+# The cap is applied at EXPORT time (Step 7), not at segmentation.
+# This is intentional: every clip is still seen by the VLM filter so we
+# don't blindly discard content before knowing whether it is useful.
+# Only the final export is capped, keeping the per-video contribution
+# to the dataset balanced.
+#
+# Analysis of the current 43-video corpus (320 passed clips total):
+#   Median passed clips/video : 9
+#   Worst offender            : zuowKeRoWl4 (50 passed) → pillow-heavy bias
+#
+# Simulation on passed clips (total 320):
+#   cap=10 → 223 exported  (70 %),  8 videos capped
+#   cap=20 → 296 exported  (93 %),  2 videos capped   ← recommended
+#   cap=30 → 316 exported  (99 %),  1 video  capped
+#
+# Set to None to disable the cap entirely.
+MAX_PASSED_CLIPS_PER_VIDEO: int | None = 20
+
 # --- Frame Sampling ---
 FRAMES_PER_CLIP = 4
 
