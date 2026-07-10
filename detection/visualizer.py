@@ -57,6 +57,7 @@ def plot_rank_bar(
     total_frames: int,
     total_detected: int,
     figures_dir: str,
+    dataset_label: str = "ExoBaby (Exocentric Frames)",
 ) -> str:
     """
     Rank-ordered bar chart coloured by CDI semantic domain.
@@ -79,7 +80,7 @@ def plot_rank_bar(
     ax.set_xlabel("Object categories (rank-ordered by frequency)", fontsize=13)
     ax.set_ylabel("Proportion of frames with object detection", fontsize=13)
     ax.set_title(
-        f"ExoBaby (Exocentric Frames) — Long-Tailed Object Distribution\n"
+        f"{dataset_label} — Long-Tailed Object Distribution\n"
         f"{total_frames:,} total frames  ·  {total_detected:,} detections  ·  "
         f"Power-law α = {alpha_val:.2f}",
         fontsize=13, pad=12,
@@ -148,7 +149,7 @@ def plot_loglog(
 # Figure 2: Per-domain bar charts
 # ---------------------------------------------------------------------------
 
-def plot_per_domain(df_cat, figures_dir: str) -> str:
+def plot_per_domain(df_cat, figures_dir: str, dataset_label: str = "ExoBaby Exocentric") -> str:
     """
     One bar chart per CDI semantic domain showing within-domain proportions.
 
@@ -164,11 +165,22 @@ def plot_per_domain(df_cat, figures_dir: str) -> str:
     axes_flat = axes.flatten() if nrows > 1 else list(axes)
 
     for ax, domain in zip(axes_flat, present):
-        sub   = df_cat[df_cat["cdi_semantic"] == domain].sort_values("proportion", ascending=False)
+        # Keep only categories that have at least 1 detection
+        sub = df_cat[(df_cat["cdi_semantic"] == domain) & (df_cat["proportion"] > 0)].sort_values("proportion", ascending=False)
         color = CDI_SEMANTIC_COLORS.get(domain, "#8B9A9E")
-        ax.bar(range(len(sub)), sub["proportion"], color=color, width=0.85, linewidth=0)
-        ax.set_xticks(range(len(sub)))
-        ax.set_xticklabels(sub["category"].tolist(), rotation=60, ha="right", fontsize=8)
+        
+        if len(sub) == 0:
+            ax.text(0.5, 0.5, "No Detections", ha="center", va="center", color="gray", fontsize=11)
+            ax.set_xticks([])
+            ax.set_xticklabels([])
+        else:
+            # Limit to top 15 categories to ensure readability
+            if len(sub) > 15:
+                sub = sub.head(15)
+            ax.bar(range(len(sub)), sub["proportion"], color=color, width=0.85, linewidth=0)
+            ax.set_xticks(range(len(sub)))
+            ax.set_xticklabels(sub["category"].tolist(), rotation=45, ha="right", fontsize=9)
+            
         ax.set_title(
             domain.replace("_", " ").title(),
             fontsize=11, color=color, fontweight="bold",
@@ -178,7 +190,7 @@ def plot_per_domain(df_cat, figures_dir: str) -> str:
     for ax in axes_flat[len(present):]:
         ax.set_visible(False)
 
-    fig.suptitle("Per-Domain Object Distribution (ExoBaby Exocentric)", fontsize=14, y=1.01)
+    fig.suptitle(f"Per-Domain Object Distribution ({dataset_label})", fontsize=14, y=1.01)
     fig.tight_layout()
     out_path = _save_figure(fig, figures_dir, f"fig2_per_domain_{_CATEGORY_SET}.png")
     return out_path
