@@ -5,16 +5,18 @@
 # on video frames using Qwen3.5 9B.
 #
 # Key Features:
-#   - Pre-flight diagnostic check before running batch inference
+#   - Full JSON diagnostic inspection during pre-flight test
+#   - Automatic extraction from content, reasoning_content, or reasoning fields
+#   - Increased max_tokens (512) to prevent truncation during thinking/reasoning
 #   - Base64 image encoding with automatic resizing
-#   - Multi-strategy response parser (handles comma, bullets, numbered lists, raw text)
+#   - Multi-strategy response parser
 #   - Multi-threaded parallel API requests (ThreadPoolExecutor)
-#   - Automatic exponential backoff & retry handling for rate limits
 #   - Resumable CSV output matching detector.py schema
 
 import base64
 import csv
 import io
+import json
 import logging
 import os
 import re
@@ -106,6 +108,9 @@ def _parse_response(response_text: str, categories_set: set) -> list:
         return []
 
     text = response_text.strip()
+    # Strip any thinking tags if present
+    text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
+
     if text.lower() in ("none", "null", "no objects", "no objects visible", "n/a"):
         return []
 
@@ -134,6 +139,25 @@ def _parse_response(response_text: str, categories_set: set) -> list:
     return detected
 
 
+def _extract_content_from_data(data: dict) -> str:
+    """
+    Extracts output text from OpenAI API response dict, checking content,
+    reasoning_content, reasoning, or text fields.
+    """
+    try:
+        choice = data["choices"][0]
+        msg = choice.get("message", {})
+        content = msg.get("content") or ""
+        
+        # If content is empty, check reasoning fields or choice text
+        if not content or not content.strip():
+            content = msg.get("reasoning_content") or msg.get("reasoning") or choice.get("text") or ""
+            
+        return content.strip()
+    except (KeyError, IndexError, TypeError):
+        return ""
+
+
 def call_craftx_api(
     frame_path: str,
     prompt: str,
@@ -160,7 +184,6 @@ def call_craftx_api(
         "Content-Type": "application/json",
     }
 
-    # Combined prompt in user message for maximum vision model compatibility
     payload = {
         "model": model_name,
         "messages": [
@@ -172,7 +195,7 @@ def call_craftx_api(
                 ],
             }
         ],
-        "max_tokens": 150,
+        "max_tokens": 512,       # Increased to 512 matching CraftX integration guide
         "temperature": 0.0,
     }
 
@@ -182,11 +205,15 @@ def call_craftx_api(
 
     for attempt in range(max_retries):
         try:
-            resp = requests.post(api_url, headers=headers, json=payload, timeout=40)
+            resp = requests.post(api_url, headers=headers, json=payload, timeout=45)
             last_status = resp.status_code
             if resp.status_code == 200:
                 data = resp.json()
-                content = data["choices"][0]["message"]["content"]
+                if debug:
+                    print("\n[DEBUG] Raw JSON response from CraftX:")
+                    print(json.dumps(data, indent=2)[:1500])
+                
+                content = _extract_content_from_data(data)
                 parsed = _parse_response(content, categories_set)
                 return parsed, content, 200
             elif resp.status_code in (429, 500, 502, 503, 504):
@@ -258,15 +285,21 @@ def run_craftx_detection(
         test_frame, prompt, categories_set, api_key, model_name, api_url, debug=True
     )
 
+    print("\n" + "=" * 70)
     print(f"HTTP Status Code : {test_status}")
-    print(f"Raw API Response : {repr(test_raw)}")
+    print(f"Extracted Content: {repr(test_raw)}")
     print(f"Parsed Detections: {test_detected}")
     print("=" * 70 + "\n")
 
-    if test_status != 200:
-        print(f"❌ PRE-FLIGHT TEST FAILED with HTTP Status {test_status}!")
-        print(f"Error details: {test_raw}")
-        print("Please check your CRAFTX_API_KEY, wallet balance, and Model Name in Step 1.")
+    if test_status != 200 or not test_raw.strip():
+        print("❌ PRE-FLIGHT TEST FAILED!")
+        if test_status != 200:
+            print(f"HTTP Status Code: {test_status}")
+            print(f"Error payload: {test_raw}")
+        else:
+            print("HTTP Status is 200, but the model returned an EMPTY response content.")
+            print("Check the [DEBUG] Raw JSON response printed above to see what CraftX returned.")
+        print("HALTING execution to prevent writing empty rows.")
         return
 
     print("✅ PRE-FLIGHT TEST PASSED! Starting batch detection...\n")
