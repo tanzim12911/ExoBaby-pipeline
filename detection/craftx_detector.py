@@ -105,7 +105,7 @@ def _encode_image_base64(image_path: str, max_dim: int = 768) -> str:
 def _parse_response(response_text: str, categories_set: set) -> list:
     """
     Robust multi-strategy response parser.
-    Handles comma-separated lists, numbered lists, bullet points, JSON, and raw text.
+    Handles comma-separated lists, numbered lists, bullet points, colons, and raw reasoning text.
     """
     if not response_text or not isinstance(response_text, str):
         return []
@@ -117,21 +117,20 @@ def _parse_response(response_text: str, categories_set: set) -> list:
     if text.lower() in ("none", "null", "no objects", "no objects visible", "n/a"):
         return []
 
-    # Clean list numbers, bullets, newlines, and semicolons
-    text_clean = re.sub(r"^\s*[\d+\-\*•]\s*", "", text, flags=re.MULTILINE)
-    text_clean = text_clean.replace("\n", ",").replace(";", ",")
-
-    tokens = [t.strip().lower().rstrip(".,;:!\"'") for t in text_clean.split(",")]
+    # Tokenize by newlines, commas, colons, semicolons, bullets, and list numbers
+    raw_tokens = re.split(r"[\n,;:•\*\-\t]+", text)
 
     detected = []
     seen = set()
-    for t in tokens:
-        t_clean = re.sub(r"^[^a-z0-9]+|[^a-z0-9]+$", "", t)
-        if t_clean in categories_set and t_clean not in seen:
-            detected.append(t_clean)
-            seen.add(t_clean)
+    for tok in raw_tokens:
+        t_clean = re.sub(r"^\s*[\d+\-\*•\.]+\s*", "", tok).strip().lower()
+        t_word  = re.sub(r"^[^a-z0-9]+|[^a-z0-9]+$", "", t_clean)
 
-    # Fallback: substring regex search if line parsing produced nothing
+        if t_word in categories_set and t_word not in seen:
+            detected.append(t_word)
+            seen.add(t_word)
+
+    # Fallback: full-text regex word boundary search if token splitting produced nothing
     if not detected:
         text_lower = text.lower()
         for cat in categories_set:
@@ -144,18 +143,13 @@ def _parse_response(response_text: str, categories_set: set) -> list:
 
 def _extract_content_from_data(data: dict) -> str:
     """
-    Extracts final output text from OpenAI API response dict.
-    Checks content, reasoning_content, reasoning, or choice text fields.
+    Extracts final output text strictly from message['content'].
+    Does NOT read from reasoning_content or reasoning fields.
     """
     try:
         choice = data["choices"][0]
         msg = choice.get("message", {})
         content = msg.get("content") or ""
-
-        # Fallback to reasoning fields or choice text if content is empty
-        if not content or not content.strip():
-            content = msg.get("reasoning_content") or msg.get("reasoning") or choice.get("text") or ""
-
         return content.strip()
     except (KeyError, IndexError, TypeError):
         return ""
@@ -190,17 +184,29 @@ def call_craftx_api(
     payload = {
         "model": model_name,
         "messages": [
-            {"role": "system", "content": "/no_think"},
+            {
+                "role": "system",
+                "content": "You are a strict object detection assistant. Do not output any thinking process or reasoning blocks. Provide the final list directly.",
+            },
             {
                 "role": "user",
                 "content": [
-                    {"type": "text", "text": prompt + " /no_think"},
+                    {"type": "text", "text": prompt},
                     {"type": "image_url", "image_url": {"url": img_b64}},
                 ],
             },
         ],
         "enable_thinking": False,
-        "max_tokens": 512,
+        "chat_template_kwargs": {
+            "enable_thinking": False
+        },
+        "extra_body": {
+            "enable_thinking": False,
+            "chat_template_kwargs": {
+                "enable_thinking": False
+            }
+        },
+        "max_tokens": 128,
         "temperature": 0.0,
     }
 
