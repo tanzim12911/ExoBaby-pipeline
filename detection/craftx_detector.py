@@ -28,6 +28,8 @@ import requests
 from PIL import Image
 from tqdm import tqdm
 
+from detection.detector import check_stale_rows, prune_stale_rows
+
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 
@@ -252,6 +254,12 @@ def run_craftx_detection(
 
     os.makedirs(os.path.dirname(output_csv) or ".", exist_ok=True)
 
+    # --- Stale row check / prune ---
+    if prune_stale:
+        prune_stale_rows(output_csv, frame_paths)
+    else:
+        check_stale_rows(output_csv, frame_paths)
+
     already_done = load_already_done(output_csv)
     frames_to_run = [f for f in frame_paths if f not in already_done]
 
@@ -296,8 +304,7 @@ def run_craftx_detection(
         else:
             print("HTTP Status is 200, but the model returned an EMPTY response content.")
             print("Check the [DEBUG] Raw JSON response printed above to see what CraftX returned.")
-        print("HALTING execution to prevent writing empty rows.")
-        return
+        raise RuntimeError("CraftX Pre-flight diagnostic check failed! Halting execution.")
 
     print("✅ PRE-FLIGHT TEST PASSED! Starting batch detection...\n")
 
@@ -308,36 +315,53 @@ def run_craftx_detection(
         if write_header:
             writer.writeheader()
 
-        # Multi-threaded execution for API requests
-        with ThreadPoolExecutor(max_workers=max_workers) as executor:
-            future_to_frame = {
-                executor.submit(
-                    call_craftx_api,
-                    frame, prompt, categories_set, api_key, model_name, api_url
-                ): frame
-                for frame in frames_to_run
-            }
+        # Write result from pre-flight test frame directly to avoid duplicate request
+        if not test_detected:
+            writer.writerow({
+                "frame_path": test_frame,
+                "class_name": "",
+            })
+        else:
+            for class_name in test_detected:
+                writer.writerow({
+                    "frame_path": test_frame,
+                    "class_name": class_name,
+                })
+        csvfile.flush()
 
-            for future in tqdm(as_completed(future_to_frame), total=len(frames_to_run), desc="CraftX API Detection"):
-                frame_path = future_to_frame[future]
-                try:
-                    detected, _, status = future.result()
-                except Exception as exc:
-                    logger.error("Failed frame %s: %s", os.path.basename(frame_path), exc)
-                    detected = []
+        remaining_frames = [f for f in frames_to_run if f != test_frame]
 
-                if not detected:
-                    # Sentinel row: frame processed but no object detected
-                    writer.writerow({
-                        "frame_path": frame_path,
-                        "class_name": "",
-                    })
-                else:
-                    for class_name in detected:
+        # Multi-threaded execution for remaining API requests
+        if remaining_frames:
+            with ThreadPoolExecutor(max_workers=max_workers) as executor:
+                future_to_frame = {
+                    executor.submit(
+                        call_craftx_api,
+                        frame, prompt, categories_set, api_key, model_name, api_url
+                    ): frame
+                    for frame in remaining_frames
+                }
+
+                for future in tqdm(as_completed(future_to_frame), total=len(remaining_frames), desc="CraftX API Detection"):
+                    frame_path = future_to_frame[future]
+                    try:
+                        detected, _, status = future.result()
+                    except Exception as exc:
+                        logger.error("Failed frame %s: %s", os.path.basename(frame_path), exc)
+                        detected = []
+
+                    if not detected:
+                        # Sentinel row: frame processed but no object detected
                         writer.writerow({
                             "frame_path": frame_path,
-                            "class_name": class_name,
+                            "class_name": "",
                         })
-                csvfile.flush()
+                    else:
+                        for class_name in detected:
+                            writer.writerow({
+                                "frame_path": frame_path,
+                                "class_name": class_name,
+                            })
+                    csvfile.flush()
 
     logger.info("CraftX detection complete!")
