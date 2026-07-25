@@ -184,30 +184,21 @@ def call_craftx_api(
     payload = {
         "model": model_name,
         "messages": [
-            {
-                "role": "system",
-                "content": "You are a strict object detection assistant. Do not output any thinking process or reasoning blocks. Provide the final list directly.",
-            },
+            {"role": "system", "content": "/no_think"},
             {
                 "role": "user",
                 "content": [
-                    {"type": "text", "text": prompt},
+                    {"type": "text", "text": prompt + "\n\n/no_think"},
                     {"type": "image_url", "image_url": {"url": img_b64}},
                 ],
             },
         ],
         "enable_thinking": False,
-        "chat_template_kwargs": {
-            "enable_thinking": False
-        },
         "extra_body": {
             "enable_thinking": False,
-            "chat_template_kwargs": {
-                "enable_thinking": False
-            }
         },
-        "max_tokens": 512,
-        "temperature": 0.0,
+        "max_tokens": 256,
+        "temperature": 0.1,
     }
 
     delay = 1.0
@@ -216,7 +207,7 @@ def call_craftx_api(
 
     for attempt in range(max_retries):
         try:
-            resp = requests.post(api_url, headers=headers, json=payload, timeout=45)
+            resp = requests.post(api_url, headers=headers, json=payload, timeout=90)
             last_status = resp.status_code
             if resp.status_code == 200:
                 data = resp.json()
