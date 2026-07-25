@@ -48,7 +48,8 @@ def _build_prompt(categories: list) -> str:
         "Examine the image carefully.\n"
         "From the vocabulary list below, identify ONLY the objects you can clearly see in this image.\n"
         "Be CONSERVATIVE — if you are not confident an object is present, omit it.\n"
-        "Reply with ONLY a comma-separated list of the visible object names from the vocabulary, "
+        "CRITICAL INSTRUCTION: Do NOT write any thinking process, reasoning steps, or explanation.\n"
+        "Respond IMMEDIATELY with ONLY a comma-separated list of the visible object names from the vocabulary, "
         "or 'none' if no listed objects are visible.\n\n"
         f"Vocabulary ({len(categories)} objects, most frequent first):\n{vocab_str}"
     )
