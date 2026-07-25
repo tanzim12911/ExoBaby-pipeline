@@ -144,12 +144,17 @@ def _parse_response(response_text: str, categories_set: set) -> list:
 def _extract_content_from_data(data: dict) -> str:
     """
     Extracts final output text from OpenAI API response dict.
-    Strictly ignores internal reasoning/thinking scratchpads (reasoning_content).
+    Checks content, reasoning_content, reasoning, or choice text fields.
     """
     try:
         choice = data["choices"][0]
         msg = choice.get("message", {})
         content = msg.get("content") or ""
+
+        # Fallback to reasoning fields or choice text if content is empty
+        if not content or not content.strip():
+            content = msg.get("reasoning_content") or msg.get("reasoning") or choice.get("text") or ""
+
         return content.strip()
     except (KeyError, IndexError, TypeError):
         return ""
