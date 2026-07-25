@@ -33,7 +33,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(na
 
 DEFAULT_API_URL: str = "https://api.craftx.corecraftsolutions.com/api/v1/chat/completions"
 DEFAULT_MODEL:   str = "Qwen3.5 9B"
-_FIELDNAMES = ["frame_path", "class_name", "confidence", "clip_similarity"]
+_FIELDNAMES = ["frame_path", "class_name"]
 
 
 def _build_prompt(categories: list) -> str:
@@ -330,19 +330,16 @@ def run_craftx_detection(
                     detected = []
 
                 if not detected:
+                    # Sentinel row: frame processed but no object detected
                     writer.writerow({
                         "frame_path": frame_path,
                         "class_name": "",
-                        "confidence": "",
-                        "clip_similarity": "",
                     })
                 else:
                     for class_name in detected:
                         writer.writerow({
                             "frame_path": frame_path,
                             "class_name": class_name,
-                            "confidence": 1.0,
-                            "clip_similarity": 1.0,
                         })
                 csvfile.flush()
 

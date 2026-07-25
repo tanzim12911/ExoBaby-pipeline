@@ -27,8 +27,6 @@
 # -------------------------------------------------------------------------
 #   frame_path      — absolute path to the input frame
 #   class_name      — detected CDI category; empty string = sentinel (no match)
-#   confidence      — 1.0 for all detections (model gives no score)
-#   clip_similarity — 1.0 (no CLIP stage; field preserved for downstream compat)
 #
 # Public functions
 # ----------------
@@ -59,7 +57,7 @@ MAX_PIXELS:      int = 512 * 512   # 262,144  — exact word miner value
 MIN_PIXELS:      int = 256 * 256   # 65,536   — exact word miner value
 MAX_NEW_TOKENS:  int = 150         # generous for closed-list comma-sep response
 
-_FIELDNAMES = ["frame_path", "class_name", "confidence", "clip_similarity"]
+_FIELDNAMES = ["frame_path", "class_name"]
 
 # ---------------------------------------------------------------------------
 # Prompt
@@ -380,10 +378,8 @@ def run_qwen35_detection(
 def _write_sentinel(writer: csv.DictWriter, frame_path: str) -> None:
     """Write a sentinel row (no detection) so the frame is skipped on resume."""
     writer.writerow({
-        "frame_path":      frame_path,
-        "class_name":      "",
-        "confidence":      "",
-        "clip_similarity": "",
+        "frame_path": frame_path,
+        "class_name": "",
     })
 
 
@@ -473,8 +469,6 @@ def _process_frame(
     else:
         for class_name in detected:
             writer.writerow({
-                "frame_path":      frame_path,
-                "class_name":      class_name,
-                "confidence":      1.0,
-                "clip_similarity": 1.0,
+                "frame_path": frame_path,
+                "class_name": class_name,
             })
