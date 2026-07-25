@@ -206,7 +206,7 @@ def call_craftx_api(
                 "enable_thinking": False
             }
         },
-        "max_tokens": 128,
+        "max_tokens": 512,
         "temperature": 0.0,
     }
 
