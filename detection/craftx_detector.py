@@ -141,18 +141,13 @@ def _parse_response(response_text: str, categories_set: set) -> list:
 
 def _extract_content_from_data(data: dict) -> str:
     """
-    Extracts output text from OpenAI API response dict, checking content,
-    reasoning_content, reasoning, or text fields.
+    Extracts final output text from OpenAI API response dict.
+    Strictly ignores internal reasoning/thinking scratchpads (reasoning_content).
     """
     try:
         choice = data["choices"][0]
         msg = choice.get("message", {})
         content = msg.get("content") or ""
-        
-        # If content is empty, check reasoning fields or choice text
-        if not content or not content.strip():
-            content = msg.get("reasoning_content") or msg.get("reasoning") or choice.get("text") or ""
-            
         return content.strip()
     except (KeyError, IndexError, TypeError):
         return ""
@@ -187,15 +182,17 @@ def call_craftx_api(
     payload = {
         "model": model_name,
         "messages": [
+            {"role": "system", "content": "/no_think"},
             {
                 "role": "user",
                 "content": [
-                    {"type": "text", "text": prompt},
+                    {"type": "text", "text": prompt + " /no_think"},
                     {"type": "image_url", "image_url": {"url": img_b64}},
                 ],
-            }
+            },
         ],
-        "max_tokens": 512,       # Increased to 512 matching CraftX integration guide
+        "enable_thinking": False,
+        "max_tokens": 512,
         "temperature": 0.0,
     }
 
