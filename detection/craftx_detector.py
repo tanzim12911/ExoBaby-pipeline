@@ -7,7 +7,7 @@
 # Key Features:
 #   - Full JSON diagnostic inspection during pre-flight test
 #   - Automatic extraction from content, reasoning_content, or reasoning fields
-#   - Increased max_tokens (512) to prevent truncation during thinking/reasoning
+#   - Configured max_tokens (256) to prevent output truncation
 #   - Base64 image encoding with automatic resizing
 #   - Multi-strategy response parser
 #   - Multi-threaded parallel API requests (ThreadPoolExecutor)
@@ -194,7 +194,7 @@ def call_craftx_api(
             },
         ],
         "enable_thinking": False,
-        "max_tokens": 512,
+        "max_tokens": 256,
         "temperature": 0.0,
     }
 
