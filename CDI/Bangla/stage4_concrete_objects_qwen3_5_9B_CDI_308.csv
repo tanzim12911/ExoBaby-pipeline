@@ -1,4 +1,4 @@
-item_id,definition,presence_count,category
+item_id,english_label,presence_count,category
 1,curtain,435,furniture_rooms
 2,hand,422,body_parts
 3,shirt,393,clothing
