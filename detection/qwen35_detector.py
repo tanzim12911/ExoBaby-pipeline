@@ -64,8 +64,8 @@ _FIELDNAMES = ["frame_path", "class_name", "raw_response"]
 # ---------------------------------------------------------------------------
 
 _SYSTEM_PROMPT = (
-    "You are a strict object detection assistant. "
-    "You only output objects from the provided list."
+    "You are a precise visual object detector. "
+    "Output only object names from the given list — nothing else."
 )
 
 def _build_prompt(categories: list) -> str:
@@ -76,26 +76,23 @@ def _build_prompt(categories: list) -> str:
     is responsible for this ordering so the most important categories appear
     first and receive the model's strongest attention.
 
-    The prompt allows up to 20 objects per frame but imposes strict
-    conservatism rules to suppress false positives:
-      - Only list objects you are highly confident are physically present.
-      - Do NOT infer objects from context or partial views.
-      - Do NOT exceed 20 items even if more seem plausible.
+    Design rationale:
+      - Format rule is first so the model anchors on output structure immediately.
+      - Conservatism is stated once, positively ("skip if uncertain") rather than
+        repeated across multiple negative rules.
+      - No overlapping rules — every sentence carries new information.
+      - Cap expressed as ≤20 (concise) rather than a sentence with both statement
+        and restatement.
     """
     vocab_str = ", ".join(categories)
     return (
-        "From the list below, name only the objects you can CLEARLY and CONFIDENTLY see "
-        "in this image.\n"
-        "STRICT RULES — follow exactly:\n"
-        "  1. Only list objects you are HIGHLY CONFIDENT are physically present and "
-        "visible (not inferred from context or partially obscured).\n"
-        "  2. Be conservative — when in doubt, OMIT the object.\n"
-        "  3. Do NOT hallucinate. Do NOT guess from background context.\n"
-        "  4. You may list UP TO 20 objects maximum — do not exceed this limit.\n"
-        "  5. Reply with ONLY a comma-separated list of matching object names, "
-        "or 'none' if nothing from the list is clearly visible.\n"
-        "  6. Do not add explanations, bullet points, or any extra text.\n\n"
-        f"Allowed objects ({len(categories)} total, most frequent first):\n{vocab_str}"
+        "List the objects from the allowed list that are clearly visible in this image.\n"
+        "Rules:\n"
+        "  1. Output: comma-separated names only, or 'none'. No other text.\n"
+        "  2. Only include objects you can directly see — skip if uncertain or inferred.\n"
+        "  3. Be conservative: fewer confident detections beats more uncertain ones.\n"
+        "  4. Maximum \u226420 objects.\n\n"
+        f"Allowed objects ({len(categories)}, most frequent first):\n{vocab_str}"
     )
 
 
