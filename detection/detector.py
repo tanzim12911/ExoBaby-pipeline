@@ -322,6 +322,7 @@ def run_detection(
                 n_errors += 1
                 if n_errors <= 5:
                     logger.warning("Batch %d error: %s", i, exc)
+            csvfile.flush()
 
     logger.info("Detection complete. Errors: %d.", n_errors)
     if n_errors > 5:

@@ -79,13 +79,13 @@ def resolve_analysis_dirs(output_base: str, run_tag: str) -> dict[str, str]:
 
 
 def collect_frames(frames_dir: str) -> list[str]:
-    """Walk *frames_dir* recursively and return all JPEG/PNG paths."""
+    """Walk *frames_dir* recursively and return all JPEG/PNG paths in sorted order."""
     paths = []
     for root, _, files in os.walk(frames_dir):
         for f in sorted(files):
             if f.lower().endswith((".jpg", ".jpeg", ".png")):
                 paths.append(os.path.join(root, f))
-    return paths
+    return sorted(paths)
 
 
 # ---------------------------------------------------------------------------

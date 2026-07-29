@@ -55,9 +55,9 @@ logger = logging.getLogger(__name__)
 QWEN35_MODEL_ID: str = "Qwen/Qwen3.5-9B"
 MAX_PIXELS:      int = 512 * 512   # 262,144  — exact word miner value
 MIN_PIXELS:      int = 256 * 256   # 65,536   — exact word miner value
-MAX_NEW_TOKENS:  int = 150         # generous for closed-list comma-sep response
+MAX_NEW_TOKENS:  int = 256         # increased to accommodate up to 20 objects
 
-_FIELDNAMES = ["frame_path", "class_name"]
+_FIELDNAMES = ["frame_path", "class_name", "raw_response"]
 
 # ---------------------------------------------------------------------------
 # Prompt
@@ -75,14 +75,27 @@ def _build_prompt(categories: list) -> str:
     ``categories`` must already be sorted by frequency descending — the caller
     is responsible for this ordering so the most important categories appear
     first and receive the model's strongest attention.
+
+    The prompt allows up to 20 objects per frame but imposes strict
+    conservatism rules to suppress false positives:
+      - Only list objects you are highly confident are physically present.
+      - Do NOT infer objects from context or partial views.
+      - Do NOT exceed 20 items even if more seem plausible.
     """
     vocab_str = ", ".join(categories)
     return (
-        "From the list below, name only the objects you can clearly see in this image.\n"
-        "Be conservative — if you are not confident an object is present, omit it.\n"
-        "Reply with ONLY a comma-separated list of the visible object names, "
-        "or 'none' if nothing from the list is visible.\n\n"
-        f"Objects ({len(categories)} total, most frequent first):\n{vocab_str}"
+        "From the list below, name only the objects you can CLEARLY and CONFIDENTLY see "
+        "in this image.\n"
+        "STRICT RULES — follow exactly:\n"
+        "  1. Only list objects you are HIGHLY CONFIDENT are physically present and "
+        "visible (not inferred from context or partially obscured).\n"
+        "  2. Be conservative — when in doubt, OMIT the object.\n"
+        "  3. Do NOT hallucinate. Do NOT guess from background context.\n"
+        "  4. You may list UP TO 20 objects maximum — do not exceed this limit.\n"
+        "  5. Reply with ONLY a comma-separated list of matching object names, "
+        "or 'none' if nothing from the list is clearly visible.\n"
+        "  6. Do not add explanations, bullet points, or any extra text.\n\n"
+        f"Allowed objects ({len(categories)} total, most frequent first):\n{vocab_str}"
     )
 
 
@@ -128,6 +141,89 @@ def load_mining_exclusions(log_path: str) -> set:
 
     logger.info("Loaded %d mining exclusions from %s", len(exclusions), log_path)
     return exclusions
+
+
+def load_video_id_exclusions(video_ids_path: str) -> set:
+    """
+    Load a plain-text file of YouTube/video IDs (one per line) that should be
+    excluded from inference.  All frames whose path contains any listed video ID
+    as a path component are excluded.
+
+    This is the preferred exclusion mechanism for the Qwen3.5-9B CDI-308 run,
+    where mining was done at the video level rather than the individual frame level.
+
+    Parameters
+    ----------
+    video_ids_path : str
+        Path to ``Qwen3_5_9B_mining_video_ids.txt`` (one video ID per line).
+
+    Returns
+    -------
+    set of strings — video IDs to exclude (stripped, non-empty lines only).
+    Returns an empty set (with a warning) if the file is not found.
+    """
+    if not os.path.exists(video_ids_path):
+        logger.warning(
+            "Video ID exclusion file not found at '%s'. No videos will be excluded.",
+            video_ids_path,
+        )
+        return set()
+
+    with open(video_ids_path, encoding="utf-8") as f:
+        video_ids = {line.strip() for line in f if line.strip()}
+
+    logger.info(
+        "Loaded %d mining video ID exclusions from %s", len(video_ids), video_ids_path
+    )
+    return video_ids
+
+
+def filter_frames_by_video_ids(
+    frame_paths: list,
+    excluded_video_ids: set,
+    frames_dir: str = "",
+) -> list:
+    """
+    Remove any frame path whose video ID component matches an excluded video ID.
+
+    The video ID is expected to be the first path component relative to
+    ``frames_dir`` (i.e. ``<frames_dir>/<video_id>/...``).
+
+    Parameters
+    ----------
+    frame_paths : list[str]
+        Absolute paths to candidate frames.
+    excluded_video_ids : set[str]
+        Set of video IDs to exclude (from load_video_id_exclusions).
+    frames_dir : str
+        Base directory used to compute the relative path (``FRAMES_DIR``).
+        If empty, the function uses os.path.basename of the parent-of-parent.
+
+    Returns
+    -------
+    list[str] — filtered frame paths.
+    """
+    if not excluded_video_ids:
+        return frame_paths
+
+    kept = []
+    for p in frame_paths:
+        # Determine the video ID: first directory component after frames_dir
+        if frames_dir:
+            rel = os.path.relpath(p, frames_dir).replace("\\", "/")
+            vid_id = rel.split("/")[0]
+        else:
+            # Fallback: use grandparent directory name
+            vid_id = os.path.basename(os.path.dirname(os.path.dirname(p)))
+        if vid_id not in excluded_video_ids:
+            kept.append(p)
+
+    logger.info(
+        "Video ID filter: %d frames kept, %d excluded.",
+        len(kept),
+        len(frame_paths) - len(kept),
+    )
+    return kept
 
 
 # ---------------------------------------------------------------------------
@@ -365,6 +461,7 @@ def run_qwen35_detection(
                         "Error on frame %s: %s", os.path.basename(frame_path), exc
                     )
                 _write_sentinel(writer, frame_path)
+            csvfile.flush()
 
     logger.info("Detection complete. Errors: %d.", n_errors)
     if n_errors > 5:
@@ -375,11 +472,14 @@ def run_qwen35_detection(
 # Internal helpers
 # ---------------------------------------------------------------------------
 
-def _write_sentinel(writer: csv.DictWriter, frame_path: str) -> None:
+def _write_sentinel(
+    writer: csv.DictWriter, frame_path: str, raw_response: str = ""
+) -> None:
     """Write a sentinel row (no detection) so the frame is skipped on resume."""
     writer.writerow({
-        "frame_path": frame_path,
-        "class_name": "",
+        "frame_path":   frame_path,
+        "class_name":   "",
+        "raw_response": raw_response,
     })
 
 
@@ -393,7 +493,12 @@ def _process_frame(
     process_vision_info,
     writer: csv.DictWriter,
 ) -> None:
-    """Run one inference call on a single frame and write results."""
+    """Run one inference call on a single frame and write results.
+
+    The raw model response is saved in the ``raw_response`` column of every
+    written row so that post-hoc analysis can verify output quality without
+    re-running the expensive inference step.
+    """
 
     messages = [
         {
@@ -454,6 +559,7 @@ def _process_frame(
         for inp, out in zip(inputs["input_ids"], generated_ids)
     ]
 
+    # --- Raw response (saved verbatim for QA / thinking-check audits) --------
     response = processor.batch_decode(
         generated_ids_trimmed,
         skip_special_tokens=True,
@@ -464,11 +570,15 @@ def _process_frame(
 
     detected = _parse_response(response, categories_set)
 
+    # Escape newlines so the raw response is safe inside a single CSV cell
+    raw_safe = response.replace("\n", " ").replace("\r", " ").strip()
+
     if not detected:
-        _write_sentinel(writer, frame_path)
+        _write_sentinel(writer, frame_path, raw_response=raw_safe)
     else:
         for class_name in detected:
             writer.writerow({
-                "frame_path": frame_path,
-                "class_name": class_name,
+                "frame_path":   frame_path,
+                "class_name":   class_name,
+                "raw_response": raw_safe,
             })
