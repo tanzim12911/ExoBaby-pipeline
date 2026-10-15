@@ -1,0 +1,1 @@
+This folder contains detection results (frame_data) of some experiments where we did not run the full detection pipeline, rather we post processed the results(union of multiple CDIs) or just got only the detection frame data.

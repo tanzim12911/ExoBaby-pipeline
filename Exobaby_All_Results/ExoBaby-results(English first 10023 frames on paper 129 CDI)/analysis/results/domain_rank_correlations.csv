@@ -1,0 +1,10 @@
+Domain,Num_Categories,Active_Categories,ExoBaby_Mean_Prop,BabyView_Mean_Prop,Spearman_Rho,P_Value
+furniture_rooms,15,15,0.01636,0.03477,0.9044,0.0
+household,34,34,0.00989,0.01698,0.861,0.0
+clothing,18,18,0.00614,0.00253,0.657,0.0031
+vehicles,3,3,0.00542,0.00229,1.0,0.0
+body_parts,13,13,0.0034,0.00362,0.573,0.0407
+toys,5,5,0.00241,0.02244,0.9,0.0374
+animals,7,7,0.00115,0.00097,0.7672,0.0441
+food_drink,23,23,0.0008,0.00181,0.6963,0.0002
+outside,11,11,0.00068,0.00151,0.5816,0.0606

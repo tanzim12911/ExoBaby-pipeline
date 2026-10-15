@@ -1,0 +1,3 @@
+dataset,total_frames,categories_detected,alpha,r_squared
+original,4889,96,0.7578,0.8917
+expanded,6031,101,0.7509,0.8941

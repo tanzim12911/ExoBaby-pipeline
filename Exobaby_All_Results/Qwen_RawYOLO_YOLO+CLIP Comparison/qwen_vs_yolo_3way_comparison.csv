@@ -1,0 +1,51 @@
+sample_idx,frame_filename,qwen_clip_count,yolo_raw_count,yolo_clip_count,qwen_clip_objects,yolo_raw_objects,yolo_clip_objects
+1,frame_0004.jpg,0,1,0,none,plant (0.35),none
+2,frame_0013.jpg,0,1,1,none,plant (0.35),"plant (conf:0.35, clip:0.29)"
+3,frame_0014.jpg,0,1,0,none,slipper (0.52),none
+4,frame_0016.jpg,0,3,0,none,"dress (0.50), plant (0.35), slipper (0.32)",none
+5,frame_0017.jpg,0,1,0,none,plant (0.34),none
+6,frame_0014.jpg,0,1,0,none,slipper (0.38),none
+7,frame_0017.jpg,0,2,0,none,"fish (0.35), bib (0.27)",none
+8,frame_0019.jpg,0,1,0,none,bib (0.33),none
+9,frame_0022.jpg,1,4,0,mouth (0.28),"bib (0.69), hair (0.43), bib (0.41), toy (0.35)",none
+10,frame_0027.jpg,0,5,0,none,"toy (0.44), bib (0.42), bib (0.32), hair (0.27), bib (0.26)",none
+11,frame_0013.jpg,0,3,0,none,"slipper (0.67), bib (0.34), slide (0.27)",none
+12,frame_0021.jpg,0,4,1,none,"fish (0.39), alligator (0.32), fish (0.30), fish (0.26)","fish (conf:0.39, clip:0.27)"
+13,frame_0023.jpg,0,1,0,none,fish (0.45),none
+14,frame_0013.jpg,0,0,0,none,none,none
+15,frame_0022.jpg,1,2,1,ear (0.27),"bib (0.37), hair (0.35)","hair (conf:0.35, clip:0.28)"
+16,frame_0023.jpg,0,1,0,none,pajamas (0.34),none
+17,frame_0024.jpg,0,1,0,none,bib (0.30),none
+18,frame_0026.jpg,0,5,3,none,"bib (0.40), hair (0.34), bib (0.33), nose (0.33), ear (0.28)","hair (conf:0.34, clip:0.28), nose (conf:0.33, clip:0.30), ear (conf:0.28, clip:0.32)"
+19,frame_0031.jpg,0,1,0,none,bib (0.33),none
+20,frame_0003.jpg,0,3,1,none,"bib (0.63), ear (0.38), car (0.26)","ear (conf:0.38, clip:0.29)"
+21,frame_0018.jpg,0,8,1,none,"fish (0.53), fish (0.49), fish (0.48), fish (0.38), dress (0.32), fish (0.31), fish (0.30), bib (0.25)","dress (conf:0.32, clip:0.27)"
+22,frame_0020.jpg,0,4,0,none,"bib (0.69), fish (0.46), fish (0.38), fish (0.31)",none
+23,frame_0023.jpg,1,3,0,mouth (0.29),"flower (0.94), bib (0.61), watch (0.45)",none
+24,frame_0025.jpg,1,2,0,mouth (0.29),"flower (0.85), bib (0.26)",none
+25,frame_0002.jpg,0,4,1,none,"flower (0.67), bucket (0.38), hair (0.32), bib (0.27)","bucket (conf:0.38, clip:0.28)"
+26,frame_0013.jpg,0,4,0,none,"flower (0.83), bucket (0.60), slipper (0.41), bib (0.34)",none
+27,frame_0006.jpg,0,1,0,none,bib (0.40),none
+28,frame_0008.jpg,0,0,0,none,none,none
+29,frame_0021.jpg,0,1,0,none,slipper (0.30),none
+30,frame_0018.jpg,0,1,0,none,bib (0.86),none
+31,frame_0007.jpg,0,5,1,none,"toy (0.59), bottle (0.49), chair (0.46), chair (0.39), can (0.27)","chair (conf:0.39, clip:0.28)"
+32,frame_0015.jpg,0,2,0,none,"toy (0.50), toy (0.49)",none
+33,frame_0002.jpg,0,1,0,none,window (0.44),none
+34,frame_0003.jpg,0,1,0,none,lamp (0.49),none
+35,frame_0009.jpg,0,1,0,none,bib (0.47),none
+36,frame_0028.jpg,0,2,0,none,"doll (0.41), bench (0.27)",none
+37,frame_0002.jpg,0,3,0,none,"bib (0.72), shirt (0.56), bib (0.55)",none
+38,frame_0016.jpg,0,1,0,none,bib (0.32),none
+39,frame_0027.jpg,0,1,1,none,dress (0.56),"dress (conf:0.56, clip:0.27)"
+40,frame_0029.jpg,0,1,0,none,chair (0.51),none
+41,frame_0003.jpg,0,1,0,none,bib (0.27),none
+42,frame_0014.jpg,0,0,0,none,none,none
+43,frame_0016.jpg,0,0,0,none,none,none
+44,frame_0025.jpg,0,1,0,none,watch (0.25),none
+45,frame_0027.jpg,0,4,0,none,"bib (0.37), frog (0.32), bib (0.28), chair (0.26)",none
+46,frame_0022.jpg,0,3,0,none,"glove (0.38), bib (0.27), watch (0.26)",none
+47,frame_0024.jpg,0,0,0,none,none,none
+48,frame_0023.jpg,0,0,0,none,none,none
+49,frame_0007.jpg,0,1,0,none,pony (0.40),none
+50,frame_0009.jpg,1,6,0,mouth (0.29),"cup (0.76), pajamas (0.65), gum (0.45), necklace (0.34), hair (0.27), crib (0.26)",none
