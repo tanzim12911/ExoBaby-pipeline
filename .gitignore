@@ -23,3 +23,9 @@ env/
 # OS
 .DS_Store
 Thumbs.db
+
+# Paper-writing context — not part of the research repo, excluded from publish
+merge_cdi.py
+merge_detections.py
+resources/
+Exobaby_All_Results/
